@@ -1,0 +1,46 @@
+# Linux system:
+systemd-sysv
+dbus
+locales
+grub2
+ca-certificates
+
+# Network:
+bridge-utils
+ebtables
+iptables
+vlan
+dnsmasq
+chrony
+
+net-tools
+arping
+tcpdump
+conntrack
+ethtool
+
+ssh
+rsync
+wget
+curl
+netcat-traditional
+socat
+iperf3
+
+# Utilities
+pciutils
+usbutils
+user-setup
+less
+vim-tiny
+lsof
+psmisc
+minicom
+bzip2
+unzip
+zip
+zstd
+xxd
+parted
+live-build
+

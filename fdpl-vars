@@ -1,0 +1,46 @@
+echo "... Set vars"
+
+SCRIPT=$(basename $0)
+
+# parameters for build and install
+ARCH=amd64
+DIST=bookworm
+# During install, root password is copied. 
+# Take default if there is no root password.
+DEFAULT_ROOT_PASSWORD=debian
+
+# Folders, files
+FDPL_FOLDER=/root/fdpl-debian
+MOUNT_FOLDER=/mnt/fdpl-debian
+LB_FOLDER=$FDPL_FOLDER/lb
+LOG_FOLDER=$FDPL_FOLDER/log
+LOGFILE=$LOG_FOLDER/$SCRIPT.$EPOCHSECONDS.log
+TARFILE=fdpl-debian-$DIST-$ARCH.tar
+
+# GIT repo for updates
+BRANCH=main
+URL=https://github.com/tecoboot/fdpl-debian/archive/refs/heads/$BRANCH.zip
+
+### init scripts ###
+
+function die() {
+	echo "$@"
+	exit 1
+}
+
+if [ "$USER" != "root" ]; then
+  die "Not root, needed for building Live Debian"
+fi
+
+# All parameters above can be adjusted in fdpl-debian.conf
+# This file is cloned as wel, to here basic permutations can be made.
+if [ -e $FDPL_FOLDER/fdpl-debian.conf ]; then
+  echo "...... Set local vars from fdpl-debian.conf"
+  source $FDPL_FOLDER/fdpl-debian.conf
+else
+  echo "...... No fdpl-debian.conf local vars file"
+  echo "...... Create a default one"
+  echo "# Default fdpl-debian.conf file" >$FDPL_FOLDER/fdpl-debian.conf
+fi
+
+mkdir -p $LOG_FOLDER
