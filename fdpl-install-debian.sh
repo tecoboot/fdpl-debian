@@ -74,9 +74,9 @@ copy_fdpl_debian() {
 }
 
 function update_root_password() {
-  root_password=$(awk -F ":" '/fdpl/{print $2}' /etc/shadow)
+  root_password=$(awk -F ":" '/root/{print $2}' /etc/shadow)
   if [ -n "$root_password" ]; then
-    echo "... Update root password"
+    echo "... Update root password, copied from current system"
     echo "root:$root_password" | chpasswd -e -R $MOUNT_FOLDER
   else
     echo "... No root password set, set to default: debian"

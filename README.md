@@ -95,7 +95,7 @@ Enter OK to continue ... OK
 ... Unmount /mnt/fdpl-debian
 ... Mount /mnt/fdpl-debian
 ... Load /root/fdpl-debian/lb/fdpl-debian-bookworm-amd64.tar to fdpl-debian partition
-... No root password set, set to default: debian                                                                                                   
+... Update root password, copied from current system                                                                                                   
 ... Install grub on /dev/sdb
 Installing for i386-pc platform.
 Installation finished. No error reported.
