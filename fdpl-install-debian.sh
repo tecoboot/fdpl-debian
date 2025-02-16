@@ -30,14 +30,15 @@ function find_free_disk() {
       echo -n "Enter OK to continue ... "
       read OK
       if [ "$OK" != OK ]; then
-        die "Installation aborted"
+        echo "...... Installation on disk $disk skipped"
+        break
       fi
       InstallDisk=$disk
       break
     fi
   done
   if [ -z "$InstallDisk" ]; then
-    die "No free installation disk. Missing or mounted?"
+    die "No free installation disk. Missing or is target mounted?"
   fi
 }
 
