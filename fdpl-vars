@@ -13,12 +13,16 @@ DEFAULT_ROOT_PASSWORD=debian
 FDPL_FOLDER=/root/fdpl-debian
 MOUNT_FOLDER=/mnt/fdpl-debian
 LB_FOLDER=$FDPL_FOLDER/lb
+LOCAL_FOLDER=$FDPL_FOLDER/local
+NEW_FDPL_FOLDER=$MOUNT_FOLDER/.$FDPL_FOLDER
+NEW_LB_FOLDER=$MOUNT_FOLDER/.$LB_FOLDER
+NEW_LOCAL_FOLDER=$MOUNT_FOLDER/.$LOCAL_FOLDER
 LOG_FOLDER=$FDPL_FOLDER/log
 LOGFILE=$LOG_FOLDER/$SCRIPT.$EPOCHSECONDS.log
 TARFILE=fdpl-debian-$DIST-$ARCH.tar
 
 # GIT repo for updates
-BRANCH=main
+BRANCH=teco
 URL=https://github.com/tecoboot/fdpl-debian/archive/refs/heads/$BRANCH.zip
 
 ### init scripts ###

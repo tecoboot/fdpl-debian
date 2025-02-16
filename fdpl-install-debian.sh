@@ -7,6 +7,8 @@ function main() {
   find_free_disk
   format_disk
   mount_fdpl
+  load_fdpl_debian
+  copy_local_files
   copy_fdpl_debian
   update_root_password
   install_grub
@@ -67,10 +69,29 @@ function mount_fdpl() {
   mount ${InstallDisk}1 $MOUNT_FOLDER
 }
 
-copy_fdpl_debian() {
-  echo "... Load $LB_FOLDER/$TARFILE to fdpl-debian partition"
+load_fdpl_debian() {
+  echo "... Load $TARFILE to fdpl-debian partition"
   cd $MOUNT_FOLDER
   tar -xf $LB_FOLDER/$TARFILE --checkpoint-action="ttyout='%T%*\r'" --checkpoint=1000
+  sync
+}
+
+copy_local_files() {
+  if [ -d $LOCAL_FOLDER ]; then
+    echo "... Copy local files to fdpl-debian partition"
+    cp -a $LOCAL_FOLDER $NEW_FDPL_FOLDER/
+    echo "... Deploy local files"
+    cp -a $NEW_LOCAL_FOLDER/* $MOUNT_FOLDER/
+    sync
+  else
+    echo "... No local files, skipped"
+  fi
+}
+
+copy_fdpl_debian() {
+  echo "... Copy $TARFILE to fdpl-debian partition"
+  mkdir -p $NEW_LB_FOLDER
+  cp -a $LB_FOLDER/$TARFILE $NEW_LB_FOLDER/
   sync
 }
 
