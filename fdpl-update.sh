@@ -60,7 +60,7 @@ function get_branch() {
 
 function deploy_branch() {
   echo "... Deploy $BRANCH branch"
-  unzip -qq $BRANCH.zip 
+  unzip -qq $BRANCH.zip
   rm $BRANCH.zip
   # this action rewrites itself...
   mv fdpl-debian-$BRANCH/* ./

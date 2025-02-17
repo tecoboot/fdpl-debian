@@ -5,7 +5,7 @@ SCRIPT=$(basename $0)
 # parameters for build and install
 ARCH=amd64
 DIST=bookworm
-# During install, root password is copied. 
+# During install, root password is copied.
 # Take default if there is no root password.
 DEFAULT_ROOT_PASSWORD=debian
 

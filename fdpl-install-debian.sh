@@ -180,7 +180,7 @@ function config_grub() {
   kernel_name=$(basename $(ls $MOUNT_FOLDER/boot/vmlinuz*amd64))
   initrd_name=$(basename $(ls $MOUNT_FOLDER/boot/initrd.img*amd64))
   cat <<EOF >$MOUNT_FOLDER/boot/grub/grub.cfg
-## FDPL-Debian /boot/grub/grub.cfg 
+## FDPL-Debian /boot/grub/grub.cfg
 set default=0
 set timeout=2
 insmod vga

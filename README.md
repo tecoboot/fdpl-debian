@@ -1,9 +1,9 @@
 # FDPL-Debian
 
 FDPL-Debian is a Debian live build for headless devices, with networking in mind.
-For easy deployment, every FDPL-Debian system can reproduce itself: rebuild and install 
+For easy deployment, every FDPL-Debian system can reproduce itself: rebuild and install
 on another device. Also, mutations can be created, which can be reproduced.
-In short, FDPL-Debian is a VIRUS. Many viruses are profitable, let FDPL-Debian be one 
+In short, FDPL-Debian is a VIRUS. Many viruses are profitable, let FDPL-Debian be one
 of them!
 
 The main design goal is simplicity, just as viruses.
@@ -11,7 +11,7 @@ The main design goal is simplicity, just as viruses.
 Bootstrapping fdpl-debian is easy, cut & paste these commands in a root shell:
 ```
 wget -q https://github.com/tecoboot/fdpl-debian/archive/refs/heads/main.zip
-unzip -qq main.zip 
+unzip -qq main.zip
 rm main.zip
 mv fdpl-debian-main/* ./
 rmdir fdpl-debian-main
@@ -20,10 +20,10 @@ rmdir fdpl-debian-main
 Run `fdpl-build-debian.sh`. This creates your own Debian distribution tarball file.
 
 Then insert a USB storage stick to your system and run `fdpl-install-debian.sh`.
-Now you have your fdpl-debian USB install stick. 
+Now you have your fdpl-debian USB install stick.
 
-Unplug and insert to your target device. Boot from USB. Then run `fdpl-install-debian.sh` 
-again. Take out the USB storage stick and reboot. Now you have your first device running 
+Unplug and insert to your target device. Boot from USB. Then run `fdpl-install-debian.sh`
+again. Take out the USB storage stick and reboot. Now you have your first device running
 your fdpl-debian.
 
 The default password is `debian`, or a copy of your root password if it is configured.
@@ -90,7 +90,7 @@ root@fdpl-000:~/fdpl-debian# ./fdpl-install-debian.sh -n fdpl-003
 ========================================
 Disk /dev/sdb: 8 GiB, 8589934592 bytes, 16777216 sectors
 NAME MAJ:MIN RM SIZE RO TYPE MOUNTPOINTS
-sdb    8:16   0   8G  0 disk 
+sdb    8:16   0   8G  0 disk
 
 ... Select a disk ...
 
@@ -105,7 +105,7 @@ sdb    8:16   0   8G  0 disk
 ...... sync
 ... Mount /mnt/fdpl-debian
 ... Load fdpl-debian-bookworm-amd64.tar to fdpl-debian partition, 704M
-... Copy local files to fdpl-debian partition                                                                                                                                           
+... Copy local files to fdpl-debian partition
          36.35K 100%    1.71MB/s    0:00:00 (xfr#2, to-chk=0/3)
 ... Deploy local files
          36.35K 100%    3.42MB/s    0:00:00 (xfr#2, to-chk=0/2)
@@ -119,5 +119,5 @@ sdb    8:16   0   8G  0 disk
 ... Unmount /mnt/fdpl-debian
 ...... sync
 ... FDPL Debian Installation on /dev/sdb completed !!
-root@fdpl-000:~/fdpl-debian#  
+root@fdpl-000:~/fdpl-debian#
 ```

@@ -41,6 +41,10 @@ unzip
 zip
 zstd
 xxd
+
+# live-build
+boot-info-script
+bsdmainutils
+xz-utils
 parted
-live-build
 
