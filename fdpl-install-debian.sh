@@ -4,6 +4,7 @@ source fdpl-vars
 
 function main() {
   echo "... Start FDPL Debian Installation"
+  echo "$(date) $SCRIPT started" >>$LOGFILE
   find_free_disk
   format_disk
   mount_fdpl
@@ -13,6 +14,7 @@ function main() {
   update_root_password
   install_grub
   config_grub
+  end_with_copy_log
   umount_fdpl
   echo "... FDPL Debian Installation on $InstallDiskDev completed !!"
 }
@@ -25,7 +27,9 @@ function find_free_disk() {
   do
     DiskDev=/dev/$disk
     if mount | grep -q $disk ; then
+      echo "========================================"
       echo "... A partition on $DiskDev is mounted, skip"
+      echo
     else
       echo "========================================"
       sfdisk -l $DiskDev | egrep "^Disk $DiskDev"
@@ -38,10 +42,12 @@ function find_free_disk() {
   for disk in $(lsblk -dno NAME | egrep -v "^sr" | sort)
   do
     DiskDev=/dev/$disk
+    DiskModel=$(parted /dev/sda print | egrep "^Model: " | cut -d " " -f 2-)
+    DiskSize=$(sfdisk -l $DiskDev | egrep "^Disk $DiskDev" | cut -d " " -f 3)
     if ! mount | grep -q $DiskDev ; then
       echo
-      echo "... ### All data on disk $DiskDev will be destroyed ###"
-      echo -n "Enter OK to continue ... "
+      echo    "### All data on disk $DiskDev, $DiskModel, $DiskSize will be destroyed ###"
+      echo -n "### Enter OK to continue : "
       read OK
       if [ "$OK" == OK ]; then
         InstallDiskDev=$DiskDev
@@ -106,6 +112,13 @@ copy_fdpl_debian() {
   echo "... Copy $TARFILE to fdpl-debian partition, $(du $LB_FOLDER/$TARFILE -h | cut -f 1)"
   mkdir -p $NEW_LB_FOLDER
   rsync -ah --info=progress2,stats0 $LB_FOLDER/$TARFILE $NEW_LB_FOLDER/
+}
+
+end_with_copy_log() {
+  echo "... Copy logfile"
+  mkdir -p $NEW_LOG_FOLDER
+  echo "$(date) $SCRIPT ended" >>$LOGFILE
+  cp $LOGFILE $NEW_LOGFILE
 }
 
 function update_root_password() {
