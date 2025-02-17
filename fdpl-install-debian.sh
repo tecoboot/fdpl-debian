@@ -63,10 +63,10 @@ function format_disk() {
   parted -a cylinder -s $InstallDiskDev mklabel msdos
 
   echo "... Make fdpl partition 1 with ext4, set boot flag"
-  parted -a optimal -s $InstallDisk mkpart primary ext4 0% 100%
+  parted -a cylinder -s $InstallDiskDev mkpart primary ext4 0% 100%
   sync
   mkfs.ext4 -Fq ${InstallDiskDev}1 -L fdpl-debian 2>&1 >>$LOGFILE
-  parted -s $InstallDisk set 1 boot on
+  parted -s $InstallDiskDev set 1 boot on
 }
 
 function umount_fdpl() {
