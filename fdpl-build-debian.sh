@@ -5,7 +5,6 @@ source fdpl-vars
 function main() {
   echo "... Start building FDPL Debian $DIST $ARCH"
   echo "$(date) $SCRIPT started" >>$LOGFILE
-  get_options
   prepare_lb_folder
   purge_old_tarball
   lb_clean
@@ -30,29 +29,26 @@ function help() {
    echo
 }
 
-function get_options() {
-  while getopts ":hn:r" option; do
-     case $option in
-        h) # display Help
-           help
-           exit
-           ;;
-        n) # get new hostname
-           shift
-           NEW_BUILD_HOSTNAME=$OPTARG
-           ;;
-        r) # Restart lb
-           restart=true
-           ;;
-       \?) # Invalid option
-           echo "Error: Invalid option"
-           help
-           exit
-           ;;
-     esac
-  done
-}
-
+while getopts ":hn:r" option; do
+   case $option in
+      h) # display Help
+         help
+         exit
+         ;;
+      n) # get new hostname
+         shift
+         NEW_BUILD_HOSTNAME=$OPTARG
+         ;;
+      r) # Restart lb
+         restart=true
+         ;;
+     \?) # Invalid option
+         echo "Error: Invalid option"
+         help
+         exit
+         ;;
+   esac
+done
 
 
 function prepare_lb_folder() {

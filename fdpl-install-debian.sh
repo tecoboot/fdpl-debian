@@ -5,7 +5,6 @@ source fdpl-vars
 function main() {
   echo "... Start FDPL Debian Installation"
   echo "$(date) $SCRIPT started" >>$LOGFILE
-  get_options
   find_free_disk
   format_disk
   mount_fdpl
@@ -31,25 +30,23 @@ function help() {
    echo
 }
 
-function get_options() {
-  while getopts ":hn:" option; do
-     case $option in
-        h) # display Help
-           help
-           exit
-           ;;
-        n) # get new hostname
-           shift
-           NEW_INSTALL_HOSTNAME=$OPTARG
-           ;;
-       \?) # Invalid option
-           echo "Error: Invalid option"
-           help
-           exit
-           ;;
-     esac
-  done
-}
+while getopts ":hn:" option; do
+   case $option in
+      h) # display Help
+         help
+         exit
+         ;;
+      n) # get new hostname
+         shift
+         NEW_INSTALL_HOSTNAME=$OPTARG
+         ;;
+     \?) # Invalid option
+         echo "Error: Invalid option"
+         help
+         exit
+         ;;
+   esac
+done
 
 function find_free_disk() {
   echo "... Find unmounted device, first one found will be used"

@@ -6,7 +6,6 @@ source fdpl-vars
 function main() {
   echo "... Start Update FDPL Debian utility"
   echo "$(date) $SCRIPT started" >>$LOGFILE
-  get_options
   proces_new_branch
   get_branch
   deploy_branch
@@ -24,29 +23,26 @@ function help() {
    echo
 }
 
-function get_options() {
-  while getopts ":hb:" option; do
-     case $option in
-        h) # display Help
-           help
-           exit
-           ;;
-        b) # set new branch
-           shift
-           NEW_BRANCH=$OPTARG
-           ;;
-        2) # Restart lb
-           restart=true
-           ;;
-       \?) # Invalid option
-           echo "Error: Invalid option"
-           help
-           exit
-           ;;
-     esac
-  done
-}
-
+while getopts ":hb:" option; do
+   case $option in
+      h) # display Help
+         help
+         exit
+         ;;
+      b) # set new branch
+         shift
+         NEW_BRANCH=$OPTARG
+         ;;
+      2) # Restart lb
+         restart=true
+         ;;
+     \?) # Invalid option
+         echo "Error: Invalid option"
+         help
+         exit
+         ;;
+   esac
+done
 
 function proces_new_branch() {
   if [ -n "$NEW_BRANCH" ]; then
