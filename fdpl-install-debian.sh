@@ -105,7 +105,7 @@ copy_local_files() {
 copy_fdpl_debian() {
   echo "... Copy $TARFILE to fdpl-debian partition, $(du $LB_FOLDER/$TARFILE -h | cut -f 1)"
   mkdir -p $NEW_LB_FOLDER
-  rsync -ah --info=progress2,stats0 $LB_FOLDER/$TARFILE of=$NEW_LB_FOLDER
+  rsync -ah --info=progress2,stats0 $LB_FOLDER/$TARFILE $NEW_LB_FOLDER/
 }
 
 function update_root_password() {
