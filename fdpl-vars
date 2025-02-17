@@ -33,7 +33,7 @@ NEW_LOG_FOLDER=$MOUNT_FOLDER/.$LOG_FOLDER
 NEW_LOGFILE=$NEW_LOG_FOLDER/$LOG_FILE_BASENAME
 
 # GIT repo for updates
-BRANCH=main
+BRANCH=teco
 URL=https://github.com/tecoboot/fdpl-debian/archive/refs/heads/$BRANCH.zip
 
 ### init scripts ###
