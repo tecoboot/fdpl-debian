@@ -48,6 +48,7 @@ function proces_new_branch() {
   if [ -n "$NEW_BRANCH" ]; then
     echo "... branch changed from $BRANCH to $NEW_BRANCH"
     BRANCH=$NEW_BRANCH
+    URL=https://github.com/tecoboot/fdpl-debian/archive/refs/heads/$BRANCH.zip
     sed -i 's/BRANCH=.*/BRANCH=$BRANCH/' $FDPL_FOLDER/fdpl-vars
   fi
 }

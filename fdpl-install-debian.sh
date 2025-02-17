@@ -62,7 +62,7 @@ function find_free_disk() {
     else
       echo "========================================"
       sfdisk -l $DiskDev | egrep "^Disk $DiskDev"
-      parted $DiskDev print 2>/dev/null | egrep "^Model: "
+      parted $DiskDev print 2>/dev/null | egrep "^Model: " || true
       lsblk $DiskDev
       echo
     fi
@@ -71,7 +71,7 @@ function find_free_disk() {
   for disk in $(lsblk -dno NAME | egrep -v "^sr" | sort)
   do
     DiskDev=/dev/$disk
-    DiskModel=$(parted /dev/sda print | egrep "^Model: " | cut -d " " -f 2-)
+    DiskModel=$(parted $DiskDev print 2>/dev/null | egrep "^Model: " | cut -d " " -f 2-)
     DiskSize=$(sfdisk -l $DiskDev | egrep "^Disk $DiskDev" | cut -d " " -f 3-4)
     if ! mount | grep -q $DiskDev ; then
       echo
