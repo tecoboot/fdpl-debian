@@ -60,15 +60,14 @@ function find_free_disk() {
 
 function format_disk() {
   echo "... Make disklabel (partition  table)"
-  parted -a optimal -s $InstallDiskDev mklabel msdos
+  parted -a cylinder -s $InstallDiskDev mklabel gpt
 
   echo "... Make grub-bios partition 1 with ext4, set boot flag"
-  parted -a optimal -s $InstallDiskDev mkpart primary ext4 0% 1MB
-  parted -s ${InstallDiskDev} set 1 boot on
+  parted -a cylinder -s $InstallDiskDev mkpart fdpl-grub 0% 1MB
   parted -s ${InstallDiskDev} set 1 bios_grub on
 
   echo "... Make fdpl partition 2 with ext4, set boot flag"
-  parted -a optimal -s $InstallDiskDev mkpart primary ext4 1MB 100%
+  parted -a cylinder -s $InstallDiskDev mkpart fdpl-data ext4 1MB 100%
   sync
   mkfs.ext4 -Fq ${InstallDiskDev}2 -L fdpl-debian 2>&1 >>$LOGFILE
 }
