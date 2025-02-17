@@ -14,50 +14,66 @@ function main() {
   install_grub
   config_grub
   umount_fdpl
-  echo "... FDPL Debian Installation on $InstallDisk completed !!"
+  echo "... FDPL Debian Installation on $InstallDiskDev completed !!"
 }
 
 function find_free_disk() {
   echo "... Find unmounted device, first one found will be used"
   umount_fdpl
   echo "... List of block devices:"
-  lsblk
-  for disk in $(sfdisk -l | egrep "^Disk /dev/" | tr -d ":"  | awk '{print $2}')
+  for disk in $(lsblk -dno NAME | egrep -v "^sr" | sort)
   do
+    DiskDev=/dev/$disk
     if mount | grep -q $disk ; then
-      echo "... $disk is mounted, skip"
+      echo "... A partition on $DiskDev is mounted, skip"
     else
-      echo "... $disk has no mount, so it is candidate to format and install"
-      echo "... ### All data on disk $disk will be destroyed ###"
-      echo -n "Enter OK to continue ... "
-      read OK
-      if [ "$OK" != OK ]; then
-        echo "...... Installation on disk $disk skipped"
-        break
-      fi
-      InstallDisk=$disk
-      break
+      echo "========================================"
+      sfdisk -l $DiskDev | egrep "^Disk $DiskDev"
+      parted $DiskDev print 2>/dev/null | egrep "^Model: "
+      lsblk $DiskDev
+      echo
     fi
   done
-  if [ -z "$InstallDisk" ]; then
+  echo "... Select a disk ..."
+  for disk in $(lsblk -dno NAME | egrep -v "^sr" | sort)
+  do
+    DiskDev=/dev/$disk
+    if ! mount | grep -q $DiskDev ; then
+      echo
+      echo "... ### All data on disk $DiskDev will be destroyed ###"
+      echo -n "Enter OK to continue ... "
+      read OK
+      if [ "$OK" == OK ]; then
+        InstallDiskDev=$DiskDev
+        echo
+        echo "... Start FDPL Debian installation on $DiskDev"
+        break
+      else
+        echo "...... Installation on disk $DiskDev skipped"
+      fi
+    fi
+  done
+  if [ -z "$InstallDiskDev" ]; then
     die "No free installation disk. Missing or is target mounted?"
   fi
 }
 
 function format_disk() {
   echo "... Make disklabel (partition  table)"
-  parted -a optimal -s $InstallDisk mklabel msdos
+  parted -a optimal -s $InstallDiskDev mklabel msdos
 
   echo "... Make fdpl partition 1 with ext4, set boot flag"
-  parted -a optimal -s $InstallDisk mkpart primary ext4 0% 100%
+  parted -a optimal -s $InstallDiskDev mkpart primary ext4 0% 100%
   sync
-  mkfs.ext4 -Fq ${InstallDisk}1 -L fdpl-debian 2>&1 >>$LOGFILE
-  parted -s $InstallDisk set 1 boot on
+  mkfs.ext4 -Fq ${InstallDiskDev}1 -L fdpl-debian 2>&1 >>$LOGFILE
+  parted -s $InstallDiskDev set 1 boot on
 }
 
 function umount_fdpl() {
   echo "... Unmount $MOUNT_FOLDER"
   cd
+  echo "...... sync"
+  sync
   umount -q $MOUNT_FOLDER || true
 }
 
@@ -66,33 +82,30 @@ function mount_fdpl() {
   mkdir -p $MOUNT_FOLDER
   umount_fdpl
   echo "... Mount $MOUNT_FOLDER"
-  mount ${InstallDisk}1 $MOUNT_FOLDER
+  mount ${InstallDiskDev}1 $MOUNT_FOLDER
 }
 
 load_fdpl_debian() {
-  echo "... Load $TARFILE to fdpl-debian partition"
+  echo "... Load $TARFILE to fdpl-debian partition, $(du $LB_FOLDER/$TARFILE -h | cut -f 1)"
   cd $MOUNT_FOLDER
   tar -xf $LB_FOLDER/$TARFILE --checkpoint-action="ttyout='%T%*\r'" --checkpoint=1000
-  sync
 }
 
 copy_local_files() {
   if [ -d $LOCAL_FOLDER ]; then
     echo "... Copy local files to fdpl-debian partition"
-    cp -a $LOCAL_FOLDER $NEW_FDPL_FOLDER/
+    rsync -ah --info=progress2,stats0 -a $LOCAL_FOLDER $NEW_FDPL_FOLDER/
     echo "... Deploy local files"
-    cp -a $NEW_LOCAL_FOLDER/* $MOUNT_FOLDER/
-    sync
+    rsync -ah --info=progress2,stats0 -a $NEW_LOCAL_FOLDER/* $MOUNT_FOLDER/
   else
     echo "... No local files, skipped"
   fi
 }
 
 copy_fdpl_debian() {
-  echo "... Copy $TARFILE to fdpl-debian partition"
+  echo "... Copy $TARFILE to fdpl-debian partition, $(du $LB_FOLDER/$TARFILE -h | cut -f 1)"
   mkdir -p $NEW_LB_FOLDER
-  cp -a $LB_FOLDER/$TARFILE $NEW_LB_FOLDER/
-  sync
+  rsync -ah --info=progress2,stats0 $LB_FOLDER/$TARFILE of=$NEW_LB_FOLDER
 }
 
 function update_root_password() {
@@ -107,15 +120,15 @@ function update_root_password() {
 }
 
 function install_grub() {
-  echo "... Install grub on $InstallDisk"
-  grub-install --root-directory=$MOUNT_FOLDER $InstallDisk 2>&1 >>$LOGFILE
+  echo "... Install grub on $InstallDiskDev"
+  grub-install --force --root-directory=$MOUNT_FOLDER ${InstallDiskDev}1 2>&1 >>$LOGFILE
   sync
 }
 
 function config_grub() {
   echo "... Configure grub"
-  uuid_partition1=$(blkid | grep ${InstallDisk}1 | awk -F\" '{print $4}')
-  uuid_partition2=$(blkid | grep ${InstallDisk}2 | awk -F\" '{print $4}')	
+  uuid_partition1=$(blkid | grep ${InstallDiskDev}1 | awk -F\" '{print $4}')
+  uuid_partition2=$(blkid | grep ${InstallDiskDev}2 | awk -F\" '{print $4}')	
   kernel_name=$(basename $(ls $MOUNT_FOLDER/boot/vmlinuz*amd64))
   initrd_name=$(basename $(ls $MOUNT_FOLDER/boot/initrd.img*amd64))
   cat <<EOF >$MOUNT_FOLDER/boot/grub/grub.cfg
