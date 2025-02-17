@@ -43,7 +43,7 @@ function find_free_disk() {
   do
     DiskDev=/dev/$disk
     DiskModel=$(parted /dev/sda print | egrep "^Model: " | cut -d " " -f 2-)
-    DiskSize=$(sfdisk -l $DiskDev | egrep "^Disk $DiskDev" | cut -d " " -f 3)
+    DiskSize=$(sfdisk -l $DiskDev | egrep "^Disk $DiskDev" | cut -d " " -f 3-4)
     if ! mount | grep -q $DiskDev ; then
       echo
       echo    "### All data on disk $DiskDev, $DiskModel, $DiskSize will be destroyed ###"
