@@ -40,8 +40,10 @@ root@fdpl-001:~/fdpl-debian# ./fdpl-update.sh -b main
 ... Set vars
 ...... Set local vars from fdpl-debian.conf
 ... Start Update FDPL Debian utility
-... branch changed from test to main
-... Get current main branch from gitlab
+... Branch changed from teco to main
+... Get current teco branch from gitlab
+... Deploy teco branch
+... Update FDPL Debian utility completed !!
 root@fdpl-001:~/fdpl-debian#
 ```
 
@@ -59,8 +61,8 @@ root@fdpl-001:~/fdpl-debian# ./fdpl-build-debian.sh -n fdpl-000
 ... Add hook scripts
 ... Make hook scripts executable
 ... Build, takes a while
-... Can follow with tail -f /root/fdpl-debian/log/fdpl-build-debian.sh.1739802155.log
-... Update binary folder"
+... Can follow with tail -f /root/fdpl-debian/log/fdpl-build-debian.sh.1739818365.log
+... Update binary folder
 ...... Update hostname
 ...... Copy fdpl build files
 ...... Tune initrd for speed, for a next initrd generation
@@ -68,7 +70,7 @@ root@fdpl-001:~/fdpl-debian# ./fdpl-build-debian.sh -n fdpl-000
 ... Remove live tarball (bypass)
 ... Make tarball file
 *************************
--rw-r--r-- 1 root root 737822720 Feb 14 20:21 fdpl-debian-bookworm-amd64.tar
+-rw-r--r-- 1 root root 737822720 Feb 17 18:55 fdpl-debian-bookworm-amd64.tar
 *************************
 ... FDPL Debian build completed !!
 root@fdpl-001:~/fdpl-debian#
