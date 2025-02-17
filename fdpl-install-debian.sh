@@ -60,16 +60,13 @@ function find_free_disk() {
 
 function format_disk() {
   echo "... Make disklabel (partition  table)"
-  parted -a cylinder -s $InstallDiskDev mklabel gpt
+  parted -a cylinder -s $InstallDiskDev mklabel msdos
 
-  echo "... Make grub-bios partition 1 with ext4, set boot flag"
-  parted -a cylinder -s $InstallDiskDev mkpart fdpl-grub 0% 1MB
-  parted -s ${InstallDiskDev} set 1 bios_grub on
-
-  echo "... Make fdpl partition 2 with ext4, set boot flag"
-  parted -a cylinder -s $InstallDiskDev mkpart fdpl-data ext4 1MB 100%
+  echo "... Make fdpl partition 1 with ext4, set boot flag"
+  parted -a optimal -s $InstallDisk mkpart primary ext4 0% 100%
   sync
-  mkfs.ext4 -Fq ${InstallDiskDev}2 -L fdpl-debian 2>&1 >>$LOGFILE
+  mkfs.ext4 -Fq ${InstallDiskDev}1 -L fdpl-debian 2>&1 >>$LOGFILE
+  parted -s $InstallDisk set 1 boot on
 }
 
 function umount_fdpl() {
@@ -85,7 +82,7 @@ function mount_fdpl() {
   mkdir -p $MOUNT_FOLDER
   umount_fdpl
   echo "... Mount $MOUNT_FOLDER"
-  mount ${InstallDiskDev}2 $MOUNT_FOLDER
+  mount ${InstallDiskDev}1 $MOUNT_FOLDER
 }
 
 load_fdpl_debian() {
@@ -125,14 +122,13 @@ function update_root_password() {
 function install_grub() {
   echo "... Install grub on $InstallDiskDev"
   # grub-install --force --root-directory=$MOUNT_FOLDER ${InstallDiskDev}1 2>&1 >>$LOGFILE
-  grub-install --root-directory=$MOUNT_FOLDER ${InstallDiskDev}1 &>>$LOGFILE
+  grub-install --force --root-directory=$MOUNT_FOLDER ${InstallDiskDev} &>>$LOGFILE
   sync
-}
+}	
 
 function config_grub() {
   echo "... Configure grub"
   uuid_partition1=$(blkid | grep ${InstallDiskDev}1 | awk -F\" '{print $4}')
-  uuid_partition2=$(blkid | grep ${InstallDiskDev}2 | awk -F\" '{print $4}')	
   kernel_name=$(basename $(ls $MOUNT_FOLDER/boot/vmlinuz*amd64))
   initrd_name=$(basename $(ls $MOUNT_FOLDER/boot/initrd.img*amd64))
   cat <<EOF >$MOUNT_FOLDER/boot/grub/grub.cfg
@@ -147,7 +143,7 @@ terminal_output serial console
 menuentry 'FDPL Debian $DIST $ARCH' {
         set root='hd0,1'
         echo    'Loading kernel $kernel_name'
-        linux   /boot/$kernel_name root=UUID="$uuid_partition2" rw console=tty0 console=ttyS0,115200n8 net.ifnames=0 biosdevname=0
+        linux   /boot/$kernel_name root=UUID="$uuid_partition1" rw console=tty0 console=ttyS0,115200n8 net.ifnames=0 biosdevname=0
         echo    'Loading ramdisk $initrd_name'
         initrd  /boot/$initrd_name
 }
