@@ -130,7 +130,7 @@ copy_local_files() {
   if [ -d $LOCAL_FOLDER ]; then
     echo "... Copy local files to fdpl-debian partition"
     rsync -ah --info=progress2,stats0 -a $LOCAL_FOLDER $NEW_FDPL_FOLDER/
-    if [ -n "$( ls -A '/path/to/dir' )" ]; then
+    if [ -n "$(ls -A $LOCAL_FOLDER 2>/dev/null)" ]; then
       echo "... Deploy local files"
       rsync -ah --info=progress2,stats0 -a $NEW_LOCAL_FOLDER/* $MOUNT_FOLDER/
     else
