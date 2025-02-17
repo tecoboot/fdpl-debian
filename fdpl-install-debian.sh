@@ -5,6 +5,7 @@ source fdpl-vars
 function main() {
   echo "... Start FDPL Debian Installation"
   echo "$(date) $SCRIPT started" >>$LOGFILE
+  get_options
   find_free_disk
   format_disk
   mount_fdpl
@@ -12,11 +13,42 @@ function main() {
   copy_local_files
   copy_fdpl_debian
   update_root_password
+  update_hostname
   install_grub
   config_grub
   end_with_copy_log
   umount_fdpl
   echo "... FDPL Debian Installation on $InstallDiskDev completed !!"
+}
+
+function help() {
+   echo "Install FDPL Debian on storage device"
+   echo
+   echo "Syntax: fdpl-install.sh [-h | -n new-hostname]"
+   echo "options:"
+   echo "h     Show help"
+   echo "n     Set new hostname on installed disk"
+   echo
+}
+
+function get_options() {
+  while getopts ":hn:" option; do
+     case $option in
+        h) # display Help
+           help
+           exit
+           ;;
+        n) # get new hostname
+           shift
+           NEW_INSTALL_HOSTNAME=$OPTARG
+           ;;
+       \?) # Invalid option
+           echo "Error: Invalid option"
+           help
+           exit
+           ;;
+     esac
+  done
 }
 
 function find_free_disk() {
@@ -80,7 +112,7 @@ function umount_fdpl() {
   cd
   echo "...... sync"
   sync
-  umount -q $MOUNT_FOLDER || true
+  umount -q $MOUNT_FOLDER 2>>$LOGFILE || true
 }
 
 function mount_fdpl() {
@@ -131,6 +163,12 @@ function update_root_password() {
     echo "root:$DEFAULT_ROOT_PASSWORD" | chpasswd -R $MOUNT_FOLDER
   fi
 }
+
+function update_hostname() {
+  echo "... Update hostname"
+  echo $NEW_INSTALL_HOSTNAME >$MOUNT_FOLDER/etc/hostname
+}
+
 
 function install_grub() {
   echo "... Install grub on $InstallDiskDev"

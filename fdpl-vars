@@ -9,6 +9,10 @@ DIST=bookworm
 # Take default if there is no root password.
 DEFAULT_ROOT_PASSWORD=debian
 
+# New hostnames
+NEW_BUILD_HOSTNAME=$(hostname)-build
+NEW_INSTALL_HOSTNAME=$(hostname)-cloned
+
 # Folders, files
 FDPL_FOLDER=/root/fdpl-debian
 MOUNT_FOLDER=/mnt/fdpl-debian
