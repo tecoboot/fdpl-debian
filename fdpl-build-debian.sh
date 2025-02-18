@@ -78,7 +78,7 @@ function lb_config() {
   # disabled compression
   # disabled tarball, do ourself (does not work)
   lb config \
-    --architectures amd64 \
+    --architectures $ARCH \
     --apt-indices false \
     --apt-recommends false \
     --backports false \
@@ -165,7 +165,7 @@ function update_binary() {
   echo $NEW_BUILD_HOSTNAME >etc/hostname
 
   echo "...... Tune chrony"
-  sed -i 's/makestep .*/makestep 1 -1/' >etc/chrony/chrony.conf
+  sed -i 's/makestep .*/makestep 1 -1/' etc/chrony/chrony.conf
   
   echo "...... Copy fdpl build files"
   mkdir -p ./$FDPL_FOLDER
@@ -184,7 +184,7 @@ function update_binary() {
 function make_tarball() {
   echo "... Remove live tarball (bypass)"
   cd $LB_FOLDER
-  rm -f live-image-amd64.tar.tar
+  rm -f live-image-$ARCH.tar.tar
 
   echo "... Make tarball file"
   cd binary

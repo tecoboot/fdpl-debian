@@ -185,8 +185,8 @@ function install_grub() {
 function config_grub() {
   echo "... Configure grub"
   uuid_partition1=$(blkid | grep ${InstallDiskDev}1 | awk -F\" '{print $4}')
-  kernel_name=$(basename $(ls $MOUNT_FOLDER/boot/vmlinuz*amd64))
-  initrd_name=$(basename $(ls $MOUNT_FOLDER/boot/initrd.img*amd64))
+  kernel_name=$(basename $(ls $MOUNT_FOLDER/boot/vmlinuz*$ARCH))
+  initrd_name=$(basename $(ls $MOUNT_FOLDER/boot/initrd.img*$ARCH))
   cat <<EOF >$MOUNT_FOLDER/boot/grub/grub.cfg
 ## FDPL-Debian /boot/grub/grub.cfg
 set default=0

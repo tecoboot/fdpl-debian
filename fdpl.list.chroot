@@ -14,7 +14,7 @@ dnsmasq
 chrony
 
 wireless-regdb
-firmware-realtek 
+#  firmware-realtek non-free, put in local folder  
 
 net-tools
 arping
