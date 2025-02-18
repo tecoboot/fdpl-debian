@@ -58,7 +58,7 @@ else
   echo "...... No $LOCAL_CONF_FILE local config file"
   echo "...... Create a default one"
   echo "# Default $LOCAL_CONF_FILE file" >$FDPL_FOLDER/$LOCAL_CONF_FILE
-  cat <<end-of-local-conf-file >>FDPL_FOLDER/$LOCAL_CONF_FILE
+  cat <<end-of-local-conf-file >>$FDPL_FOLDER/$LOCAL_CONF_FILE
 # Parameters for build and install
 ARCH=amd64
 DIST=bookworm
