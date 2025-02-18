@@ -22,8 +22,9 @@ function main() {
 function help() {
    echo "Build FDPL Debian tarball"
    echo
-   echo "Syntax: fdpl-build-debian.sh [-h | -n new-hostname | -r]"
+   echo "Syntax: fdpl-build-debian.sh [ -f | -h | -n new-hostname | -r ]"
    echo "options:"
+   echo "f     Follow build log"
    echo "h     Show help"
    echo "r     Restart with empty lb folder"
    echo
@@ -31,6 +32,10 @@ function help() {
 
 while getopts ":hr" option; do
    case $option in
+      f) # Follow
+         tail -f $(ls -t log/fdpl-build-debian.sh.* | head -1)
+         exit
+         ;;
       h) # display Help
          help
          exit
