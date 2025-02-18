@@ -24,12 +24,11 @@ function help() {
    echo "Syntax: fdpl-build-debian.sh [-h | -n new-hostname | -r]"
    echo "options:"
    echo "h     Show help"
-   echo "n     Set new hostname on installed disk"
    echo "r     Restart with empty lb folder"
    echo
 }
 
-while getopts ":hn:r" option; do
+while getopts ":hr" option; do
    case $option in
       h) # display Help
          help
@@ -101,13 +100,10 @@ function add_package_list() {
 
 function add_hook_scripts() {
   echo "... Add hook scripts"
-  cat <<'end_hook' >config/hooks/normal/9990-fdpl.hook.chroot
+  cat <<'9990-fdpl.hook' >config/hooks/normal/9990-fdpl.hook.chroot
 
   echo "... Update root password"
   echo root:debian | chpasswd
-
-  echo "... Update hostname"
-  echo "fdpl-000" >/etc/hostname
 
   echo "... Update profile for ll"
   echo "alias ll='ls -al'" >/etc/profile.d/ls.sh
@@ -115,30 +111,28 @@ function add_hook_scripts() {
 
   echo "... Update network, DHCP"
   cat <<end_dhcp >>/etc/network/interfaces
-  #
-  # run dhclient
-  allow-hotplug eth0
-  iface eth0 inet dhcp
-  #
-  end_dhcp
+#
+# run dhclient
+allow-hotplug eth0
+iface eth0 inet dhcp
+#
+end_dhcp
 
-  echo "... Update SSH server"
-  dpkg-reconfigure openssh-server
-  cat <<end_ssh >>/etc/ssh/sshd_config
-  PermitRootLogin yes
-  end_ssh
+echo "... Update SSH server"
+echo "PermitRootLogin yes" >>/etc/ssh/sshd_config
+dpkg-reconfigure openssh-server
 
-  echo "... Remove live package list"
-  rm -f config/package-lists/live.list.chroot
+echo "... Remove live package list"
+rm -f config/package-lists/live.list.chroot
 
-  exit 0
-end_hook
+exit 0
+9990-fdpl.hook
 
   # shell for verification
-  cat <<EOF >config/hooks/normal/9999-fdpl-bash.hook.chroot.disabled
-  /bin/bash
-  exit 0
-EOF
+  cat <<9999-fdpl-bash.hook >config/hooks/normal/9999-fdpl-bash.hook.chroot.disabled
+/bin/bash
+exit 0
+9999-fdpl-bash.hook
   # Uncomment to debug with shell
   # mv config/hooks/normal/9999-fdpl-bash.hook.chroot.disabled config/hooks/normal/9999-foxtrot-bash.hook.chroot
 

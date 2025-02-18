@@ -21,6 +21,7 @@ LB_FOLDER_NAME=lb
 LOCAL_FOLDER_NAME=local
 LOG_FOLDER_NAME=log
 LOG_FILE_BASENAME=$SCRIPT.$EPOCHSECONDS.log
+LOCAL_CONF_FILE=fdpl-debian.local.conf
 # Generated names
 LB_FOLDER=$FDPL_FOLDER/$LB_FOLDER_NAME
 LOCAL_FOLDER=$FDPL_FOLDER/$LOCAL_FOLDER_NAME
@@ -32,9 +33,8 @@ NEW_LOCAL_FOLDER=$MOUNT_FOLDER/.$LOCAL_FOLDER
 NEW_LOG_FOLDER=$MOUNT_FOLDER/.$LOG_FOLDER
 NEW_LOGFILE=$NEW_LOG_FOLDER/$LOG_FILE_BASENAME
 
-# GIT repo for updates
-BRANCH=teco
-URL=https://github.com/tecoboot/fdpl-debian/archive/refs/heads/$BRANCH.zip
+# GIT branch for updates
+BRANCH=main   # can use local.conf override for own branch
 
 ### init scripts ###
 
@@ -47,15 +47,18 @@ if [ "$USER" != "root" ]; then
   die "Not root, needed for building Live Debian"
 fi
 
-# All parameters above can be adjusted in fdpl-debian.conf
+# All parameters above can be adjusted in $LOCAL_CONF_FILE
 # This file is cloned as wel, to here basic permutations can be made.
-if [ -e $FDPL_FOLDER/fdpl-debian.conf ]; then
-  echo "...... Set local vars from fdpl-debian.conf"
-  source $FDPL_FOLDER/fdpl-debian.conf
+if [ -e $FDPL_FOLDER/$LOCAL_CONF_FILE ]; then
+  echo "...... Set local vars from $LOCAL_CONF_FILE"
+  source $FDPL_FOLDER/$LOCAL_CONF_FILE
 else
-  echo "...... No fdpl-debian.conf local vars file"
+  echo "...... No $LOCAL_CONF_FILE local vars file"
   echo "...... Create a default one"
-  echo "# Default fdpl-debian.conf file" >$FDPL_FOLDER/fdpl-debian.conf
+  echo "# Default $LOCAL_CONF_FILE file" >$FDPL_FOLDER/$LOCAL_CONF_FILE
 fi
+
+# GIT repo for updates
+URL=https://github.com/tecoboot/fdpl-debian/archive/refs/heads/$BRANCH.zip
 
 mkdir -p $LOG_FOLDER
