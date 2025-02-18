@@ -13,6 +13,9 @@ vlan
 dnsmasq
 chrony
 
+wireless-regdb
+firmware-realtek 
+
 net-tools
 arping
 tcpdump

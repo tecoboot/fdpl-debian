@@ -164,6 +164,9 @@ function update_binary() {
   echo "...... Update hostname"
   echo $NEW_BUILD_HOSTNAME >etc/hostname
 
+  echo "...... Tune chrony"
+  sed -i 's/makestep .*/makestep 1 -1/' >etc/chrony/chrony.conf
+  
   echo "...... Copy fdpl build files"
   mkdir -p ./$FDPL_FOLDER
   cp -a $FDPL_FOLDER/fdpl-* ./$FDPL_FOLDER

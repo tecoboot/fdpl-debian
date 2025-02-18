@@ -87,19 +87,28 @@ root@fdpl-000:~/fdpl-debian# ./fdpl-install-debian.sh -n fdpl-003
 ...... sync
 ... List of block devices:
 ========================================
-... A partition on /dev/sda is mounted, skip
+Disk /dev/sda: 8 GiB, 8589934592 bytes, 16777216 sectors
+Model: VMware, VMware Virtual S (scsi)
+NAME   MAJ:MIN RM SIZE RO TYPE MOUNTPOINTS
+sda      8:0    0   8G  0 disk 
+└─sda1   8:1    0   8G  0 part 
 
 ========================================
-Disk /dev/sdb: 8 GiB, 8589934592 bytes, 16777216 sectors
-NAME MAJ:MIN RM SIZE RO TYPE MOUNTPOINTS
-sdb    8:16   0   8G  0 disk
+... A partition on /dev/sdb is mounted, skip
+
+========================================
+Disk /dev/sdc: 114.6 GiB, 123048296448 bytes, 240328704 sectors
+Model:  USB  SanDisk 3.2Gen1 (scsi)
+NAME   MAJ:MIN RM   SIZE RO TYPE MOUNTPOINTS
+sdc      8:32   1 114.6G  0 disk 
+└─sdc1   8:33   1 114.6G  0 part 
 
 ... Select a disk ...
 
-### All data on disk /dev/sdb, , 8 GiB, will be destroyed ###
+### All data on disk /dev/sda, VMware, VMware Virtual S (scsi), 8 GiB, will be destroyed ###
 ### Enter OK to continue : OK
 
-... Start FDPL Debian installation on /dev/sdb
+... Start FDPL Debian installation on /dev/sda
 ... Make disklabel (partition  table)
 ... Make fdpl partition 1 with ext4, set boot flag
 ... Mount fdpl-debian partition on /mnt/fdpl-debian
@@ -107,19 +116,18 @@ sdb    8:16   0   8G  0 disk
 ...... sync
 ... Mount /mnt/fdpl-debian
 ... Load fdpl-debian-bookworm-amd64.tar to fdpl-debian partition, 704M
-... Copy local files to fdpl-debian partition
-         36.35K 100%    1.71MB/s    0:00:00 (xfr#2, to-chk=0/3)
-... Deploy local files
-         36.35K 100%    3.42MB/s    0:00:00 (xfr#2, to-chk=0/2)
+... Copy local files to fdpl-debian partition                                                                                                                                           
+              0 100%    0.00kB/s    0:00:00 (xfr#0, to-chk=0/1)
+... Local folder is empty
 ... Copy fdpl-debian-bookworm-amd64.tar to fdpl-debian partition, 704M
-        737.82M 100%  125.73MB/s    0:00:05 (xfr#1, to-chk=0/1)
+        737.82M 100%  382.19MB/s    0:00:01 (xfr#1, to-chk=0/1)
 ... Update root password, copied from current system
 ... Update hostname
-... Install grub on /dev/sdb
+... Install grub on /dev/sda
 ... Configure grub
 ... Copy logfile
 ... Unmount /mnt/fdpl-debian
 ...... sync
-... FDPL Debian Installation on /dev/sdb completed !!
+... FDPL Debian Installation on /dev/sda completed !!
 root@fdpl-000:~/fdpl-debian#
 ```

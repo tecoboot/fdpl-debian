@@ -60,11 +60,13 @@ function find_free_disk() {
       echo "... A partition on $DiskDev is mounted, skip"
       echo
     else
-      echo "========================================"
-      sfdisk -l $DiskDev | egrep "^Disk $DiskDev"
-      parted $DiskDev print 2>/dev/null | egrep "^Model: " || true
-      lsblk $DiskDev
-      echo
+      if sfdisk -l $DiskDev 2>/dev/null ; then
+        echo "========================================"
+        sfdisk -l $DiskDev 2>>$LOGFILE | egrep "^Disk $DiskDev" || true
+        parted $DiskDev print 2>>$LOGFILE | egrep "^Model: " || true
+        lsblk $DiskDev 2>>$LOGFILE || true
+        echo
+      fi
     fi
   done
   echo "... Select a disk ..."
@@ -102,6 +104,8 @@ function format_disk() {
   sync
   mkfs.ext4 -Fq ${InstallDiskDev}1 -L fdpl-debian 2>&1 >>$LOGFILE
   parted -s $InstallDiskDev set 1 boot on
+  sync
+  sleep 0.1   # wait before it can be used
 }
 
 function umount_fdpl() {
