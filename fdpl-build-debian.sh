@@ -26,11 +26,12 @@ function help() {
    echo "options:"
    echo "f     Follow build log"
    echo "h     Show help"
+   echo "n     Set new hostname in tarball"
    echo "r     Restart with empty lb folder"
    echo
 }
 
-while getopts ":hr" option; do
+while getopts ":fhn:r" option; do
    case $option in
       f) # Follow
          tail -f $(ls -t log/fdpl-build-debian.sh.* | head -1)
