@@ -47,8 +47,7 @@ if [ "$USER" != "root" ]; then
   die "Not root, needed for building Live Debian"
 fi
 
-# All parameters above can be adjusted in $LOCAL_CONF_FILE
-# This file is cloned as wel, to here basic permutations can be made.
+# Get local configuration
 if [ -e $FDPL_FOLDER/$LOCAL_CONF_FILE ]; then
   if [ -z "$FIRST_LOCAL_CONF" ]; then
     echo "...... Set local vars from $LOCAL_CONF_FILE"
@@ -56,9 +55,16 @@ if [ -e $FDPL_FOLDER/$LOCAL_CONF_FILE ]; then
     FIRST_LOCAL_CONF=done
   fi
 else
-  echo "...... No $LOCAL_CONF_FILE local vars file"
+  echo "...... No $LOCAL_CONF_FILE local config file"
   echo "...... Create a default one"
   echo "# Default $LOCAL_CONF_FILE file" >$FDPL_FOLDER/$LOCAL_CONF_FILE
+  cat <<end-of-local-conf-file >>FDPL_FOLDER/$LOCAL_CONF_FILE
+# Parameters for build and install
+ARCH=amd64
+DIST=bookworm
+# GIT branch for updates
+BRANCH=main
+end-of-local-conf-file
 fi
 
 # GIT repo for updates
