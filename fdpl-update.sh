@@ -1,6 +1,6 @@
 #!/bin/bash -e
 
-source fdpl-vars
+source fdpl.vars
 
 
 function main() {
