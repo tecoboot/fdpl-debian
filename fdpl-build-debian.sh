@@ -5,6 +5,7 @@ source fdpl.vars
 function main() {
   echo "... Start building FDPL Debian $DIST $ARCH"
   echo "$(date) $SCRIPT started" >>$LOGFILE
+  prepare_live_build
   prepare_lb_folder
   purge_old_tarball
   lb_clean
@@ -49,6 +50,16 @@ while getopts ":hr" option; do
    esac
 done
 
+
+function prepare_live_build() {
+  if ! ping -q -c1 google.com &>/dev/null ; then
+    die "No Internet access"
+  fi
+  if ! which lb ; then
+    apt -q update
+    apt -q -y install live-build
+  fi
+}
 
 function prepare_lb_folder() {
   echo "... cd $LB_FOLDER"
