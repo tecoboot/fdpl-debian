@@ -3,6 +3,7 @@
 source fdpl.vars
 
 function main() {
+  echo "... Start FDPL Debian build"
   prepare_live_build
   prepare_lb_folder
   purge_old_tarball

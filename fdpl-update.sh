@@ -4,8 +4,7 @@ source fdpl.vars
 
 
 function main() {
-  echo "... Start Update FDPL Debian utility"
-  echo "$(date) $SCRIPT started" >>$LOGFILE
+  echo "... Start FDPL Debian update"
   proces_new_branch
   get_branch
   deploy_branch

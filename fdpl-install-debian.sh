@@ -3,8 +3,7 @@
 source fdpl.vars
 
 function main() {
-  echo "... Start FDPL Debian Installation"
-  echo "$(date) $SCRIPT started" >>$LOGFILE
+  echo "... Start FDPL Debian installation"
   find_free_disk
   format_disk
   mount_fdpl
