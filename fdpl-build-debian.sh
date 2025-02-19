@@ -61,9 +61,13 @@ function prepare_live_build() {
   if ! ping -q -c1 google.com &>/dev/null ; then
     die "No Internet access"
   fi
-  if ! which lb ; then
-    apt -q update
-    apt -q -y install live-build
+  if ! which lb &>/dev/null ; then
+    export DEBIAN_FRONTEND=noninteractive
+    export DEBIAN_PRIORITY=critical
+    apt-get -qy update
+    apt-get -qy -o "Dpkg::Options::=--force-confdef" -o "Dpkg::Options::=--force-confold" upgrade
+    apt-get -qy install live-build
+    apt-get -qy autoclean
   fi
 }
 
