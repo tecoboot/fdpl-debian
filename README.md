@@ -28,8 +28,11 @@ your fdpl-debian.
 
 The default password is `debian`, or a copy of your root password if it is configured.
 
-Files in ./local folder will be copied and deployed on root. With a post-install script,
-cloning extensions is straight-forward.
+Files in ./local folder will be copied and deployed on "/" root-folder during installation. 
+With a post-install script, cloning extensions is straight-forward.
+
+Files in ./firmware folder are deployed on "/" root-folder during build. 
+These are also copied during installation
 
 Have fun with FDPL-Debian !!!
 
@@ -38,39 +41,40 @@ Running `fdpl-update.sh `, switch to main branch:
 ```
 root@fdpl-001:~/fdpl-debian# ./fdpl-update.sh -b main
 ... Set vars
-...... Set local vars from fdpl-debian.conf
-... Start Update FDPL Debian utility
-... Branch changed from teco to main
-... Get current teco branch from gitlab
-... Deploy teco branch
+... Set local vars from fdpl.local.vars
+... Start FDPL Debian update
+... Get current main branch from gitlab
+... Deploy main branch
 ... Update FDPL Debian utility completed !!
 root@fdpl-001:~/fdpl-debian#
 ```
 
 Running `fdpl-build-debian.sh`, hostname on install image has -000 suffix:
 ```
-root@fdpl-001:~/fdpl-debian# ./fdpl-build-debian.sh -n fdpl-000
+root@fdpl-001:~/fdpl-debian# ./fdpl-build-debian.sh -r
 ... Set vars
-...... Set local vars from fdpl-debian.conf
-... Start building FDPL Debian bookworm amd64
+... Set local vars from fdpl.local.vars
+... Start FDPL Debian build
 ... cd /root/fdpl-debian/lb
+OK to remove all files in /root/fdpl-debian/lb? 
+... All files in /root/fdpl-debian/lb will be deleted
 ... Purge old fdpl-debian tarball file
 ... Create live-build config
-... Create or update live-build config
+... Config live-build config
 ... Add custom files
 ... Add hook scripts
 ... Make hook scripts executable
 ... Build, takes a while
-... Can follow with tail -f /root/fdpl-debian/log/fdpl-build-debian.sh.1739818365.log
 ... Update binary folder
 ...... Update hostname
+...... Tune chrony
 ...... Copy fdpl build files
 ...... Tune initrd for speed, for a next initrd generation
 ...... Cleanup binary folder
 ... Remove live tarball (bypass)
 ... Make tarball file
 *************************
--rw-r--r-- 1 root root 737822720 Feb 17 18:55 fdpl-debian-bookworm-amd64.tar
+-rw-r--r-- 1 root root 739819520 Feb 19 16:53 fdpl-debian-bookworm-amd64.tar
 *************************
 ... FDPL Debian build completed !!
 root@fdpl-001:~/fdpl-debian#
@@ -80,54 +84,46 @@ Running `fdpl-install-debian.sh`, switch to new hostname:
 ```
 root@fdpl-000:~/fdpl-debian# ./fdpl-install-debian.sh -n fdpl-003
 ... Set vars
-...... Set local vars from fdpl-debian.conf
-... Start FDPL Debian Installation
+... Set local vars from fdpl.local.vars
+... Start FDPL Debian installation
 ... Find unmounted device, first one found will be used
 ... Unmount /mnt/fdpl-debian
 ...... sync
 ... List of block devices:
 ========================================
-Disk /dev/sda: 8 GiB, 8589934592 bytes, 16777216 sectors
+... A partition on /dev/sda is mounted, skip
+
+========================================
+Disk /dev/sdb: 8 GiB, 8589934592 bytes, 16777216 sectors
 Model: VMware, VMware Virtual S (scsi)
 NAME   MAJ:MIN RM SIZE RO TYPE MOUNTPOINTS
-sda      8:0    0   8G  0 disk 
-└─sda1   8:1    0   8G  0 part 
-
-========================================
-... A partition on /dev/sdb is mounted, skip
-
-========================================
-Disk /dev/sdc: 114.6 GiB, 123048296448 bytes, 240328704 sectors
-Model:  USB  SanDisk 3.2Gen1 (scsi)
-NAME   MAJ:MIN RM   SIZE RO TYPE MOUNTPOINTS
-sdc      8:32   1 114.6G  0 disk 
-└─sdc1   8:33   1 114.6G  0 part 
+sdb      8:16   0   8G  0 disk 
+└─sdb1   8:17   0   8G  0 part 
 
 ... Select a disk ...
 
-### All data on disk /dev/sda, VMware, VMware Virtual S (scsi), 8 GiB, will be destroyed ###
+### All data on disk /dev/sdb, VMware, VMware Virtual S (scsi), 8 GiB, will be destroyed ###
 ### Enter OK to continue : OK
 
-... Start FDPL Debian installation on /dev/sda
+... Start FDPL Debian installation on /dev/sdb
 ... Make disklabel (partition  table)
 ... Make fdpl partition 1 with ext4, set boot flag
 ... Mount fdpl-debian partition on /mnt/fdpl-debian
 ... Unmount /mnt/fdpl-debian
 ...... sync
 ... Mount /mnt/fdpl-debian
-... Load fdpl-debian-bookworm-amd64.tar to fdpl-debian partition, 704M
-... Copy local files to fdpl-debian partition                                                                                                                                           
-              0 100%    0.00kB/s    0:00:00 (xfr#0, to-chk=0/1)
-... Local folder is empty
-... Copy fdpl-debian-bookworm-amd64.tar to fdpl-debian partition, 704M
-        737.82M 100%  382.19MB/s    0:00:01 (xfr#1, to-chk=0/1)
+... Load fdpl-debian-bookworm-amd64.tar to fdpl-debian partition, 706M
+... Copy fdpl-debian folder                                                                                                                                         
+        739.89M  99%  348.79MB/s    0:00:02 (xfr#28, to-chk=0/42) 
+... Deploy local folder
+         33.10K 100%   30.14MB/s    0:00:00 (xfr#13, to-chk=0/16)
 ... Update root password, copied from current system
 ... Update hostname
-... Install grub on /dev/sda
+... Install grub on /dev/sdb
 ... Configure grub
 ... Copy logfile
 ... Unmount /mnt/fdpl-debian
 ...... sync
-... FDPL Debian Installation on /dev/sda completed !!
+... FDPL Debian Installation on /dev/sdb completed !!
 root@fdpl-000:~/fdpl-debian#
 ```

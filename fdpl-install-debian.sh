@@ -65,7 +65,7 @@ function find_free_disk() {
       echo "... A partition on $DiskDev is mounted, skip"
       echo
     else
-      if sfdisk -l $DiskDev 2>/dev/null ; then
+      if sfdisk -l $DiskDev &>/dev/null ; then
         echo "========================================"
         sfdisk -l $DiskDev 2>>$LOGFILE | egrep "^Disk $DiskDev" || true
         parted $DiskDev print 2>>$LOGFILE | egrep "^Model: " || true
