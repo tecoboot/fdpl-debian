@@ -13,8 +13,9 @@ vlan
 dnsmasq
 chrony
 
-# wireless-regdb
-#  firmware-realtek non-free, put in local folder  
+wireless-regdb
+# no non-free included, put in local folder
+# e.g. firmware-realtek for APU
 
 net-tools
 arping
@@ -45,7 +46,7 @@ zip
 zstd
 xxd
 
-# live-build
+# fdpl build / install tools
 boot-info-script
 bsdmainutils
 xz-utils

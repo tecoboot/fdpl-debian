@@ -97,9 +97,9 @@ function lb_clean() {
 function lb_config() {
   echo "... Config live-build config"
   # disabled compression
-  # disabled tarball, do ourself (does not work)
+  # disabled tarball, do ourself (does not work, live-image is build)
   lb config \
-    --architectures $ARCH \
+    --architecture $ARCH \
     --apt-indices false \
     --apt-recommends false \
     --backports false \
@@ -141,10 +141,10 @@ end_dhcp
 
 echo "... Update SSH server"
 echo "PermitRootLogin yes" >>/etc/ssh/sshd_config
-# xxx dpkg-reconfigure openssh-server
+dpkg-reconfigure openssh-server
 
 echo "... Remove live package list"
-# xxx rm -f config/package-lists/live.list.chroot
+rm -f config/package-lists/live.list.chroot
 
 exit 0
 9990-fdpl.hook
@@ -183,7 +183,9 @@ function update_binary() {
   
   echo "...... Copy fdpl build files"
   mkdir -p ./$FDPL_FOLDER
-  cp -a $FDPL_FOLDER/fdpl-* LICENSE README.md ./$FDPL_FOLDER
+  cp -a $FDPL_FOLDER/fdpl-* \
+        $FDPL_FOLDER/LICENSE \
+        $FDPL_FOLDER/README.md ./$FDPL_FOLDER
 
   echo "...... Tune initrd for speed, for a next initrd generation"
   # xxx sed -i "s/MODULES=.*/MODULES=dep/g; s/.*COMPRESSLEVEL=.*/COMPRESSLEVEL=1/g"  ./etc/initramfs-tools/initramfs.conf
