@@ -17,41 +17,49 @@ mv fdpl-debian-main/* ./
 rmdir fdpl-debian-main
 ```
 
-Run `fdpl-build-debian.sh`. This creates your own Debian distribution tarball file.
+Run `./fdpl-build-debian.sh` from folder /root/fdpl-debian. This creates your own Debian 
+distribution tarball file.
 
-Then insert a USB storage stick to your system and run `fdpl-install-debian.sh`.
-Now you have your fdpl-debian USB install stick.
+Then insert a USB storage stick to your system and run `fdpl-install-debian.sh` from 
+folder /root/fdpl-debian. Now you have your fdpl-debian USB install stick.
 
-Unplug and insert to your target device. Boot from USB. Then run `fdpl-install-debian.sh`
-again. Take out the USB storage stick and reboot. Now you have your first device running
-your fdpl-debian.
+Unplug and insert to your target device. Boot from USB. Then run `fdpl-install-debian.sh` 
+from folder /root/fdpl-debian again. Take out the USB storage stick and reboot. Now you 
+have your first device running your fdpl-debian.
 
 The default password is `debian`, or a copy of your root password if it is configured.
 
-Files in ./local folder will be copied and deployed on "/" root-folder during installation. 
-With a post-install script, cloning extensions is straight-forward.
+Files in ./local folder will be copied and deployed on "/" root-folder during 
+installation. With a post-install script, cloning extensions is straight-forward.
 
 Files in ./firmware folder are deployed on "/" root-folder during build. 
-These are also copied during installation
+These are also copied during installation.
+
+Sync to git repository with `fdpl-update.sh` script.
+
+Use file fdpl.vars for adjustments. These are copied during installation, but lost at 
+update. Use file fdpl.local.vars for *local* adjustments. These will not be copied and 
+will not be overwritten at update.
+
 
 Have fun with FDPL-Debian !!!
 
 
 Running `fdpl-update.sh `, switch to main branch:
 ```
-root@fdpl-001:~/fdpl-debian# ./fdpl-update.sh -b main
+root@fdpl202502191758:~/fdpl-debian# ./fdpl-update.sh -b main
 ... Set vars
 ... Set local vars from fdpl.local.vars
 ... Start FDPL Debian update
 ... Get current main branch from gitlab
 ... Deploy main branch
 ... Update FDPL Debian utility completed !!
-root@fdpl-001:~/fdpl-debian#
+root@fdpl202502191758:~/fdpl-debian#
 ```
 
-Running `fdpl-build-debian.sh`, hostname on install image has -000 suffix:
+Running `fdpl-build-debian.sh`, with restart of the lb (livebuild) folder.
 ```
-root@fdpl-001:~/fdpl-debian# ./fdpl-build-debian.sh -r
+root@fdpl202502191758:~/fdpl-debian# ./fdpl-build-debian.sh -r
 ... Set vars
 ... Set local vars from fdpl.local.vars
 ... Start FDPL Debian build
@@ -77,12 +85,12 @@ OK to remove all files in /root/fdpl-debian/lb?
 -rw-r--r-- 1 root root 739819520 Feb 19 16:53 fdpl-debian-bookworm-amd64.tar
 *************************
 ... FDPL Debian build completed !!
-root@fdpl-001:~/fdpl-debian#
+root@fdpl202502191758:~/fdpl-debian#
 ```
 
 Running `fdpl-install-debian.sh`, switch to new hostname:
 ```
-root@fdpl-000:~/fdpl-debian# ./fdpl-install-debian.sh -n fdpl-003
+root@fdpl202502191758:~/fdpl-debian# ./fdpl-install-debian.sh -n fdpl-003
 ... Set vars
 ... Set local vars from fdpl.local.vars
 ... Start FDPL Debian installation
@@ -125,5 +133,5 @@ sdb      8:16   0   8G  0 disk
 ... Unmount /mnt/fdpl-debian
 ...... sync
 ... FDPL Debian Installation on /dev/sdb completed !!
-root@fdpl-000:~/fdpl-debian#
+root@fdpl202502191758:~/fdpl-debian#
 ```
