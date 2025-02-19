@@ -14,7 +14,7 @@ function main() {
   update_binary
   make_tarball
   echo "... FDPL Debian build completed !!"
-  echo "$(date) $SCRIPT ended" >>$LOGFILE
+  log_ended_message
 }
 
 function help() {

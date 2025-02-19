@@ -10,7 +10,7 @@ function main() {
   get_branch
   deploy_branch
   echo "... Update FDPL Debian utility completed !!"
-  echo "$(date) $SCRIPT ended" >>$LOGFILE
+  log_ended_message
 }
 
 function help() {

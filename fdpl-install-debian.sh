@@ -18,6 +18,7 @@ function main() {
   end_with_copy_log
   umount_fdpl
   echo "... FDPL Debian Installation on $InstallDiskDev completed !!"
+  log_ended_message
 }
 
 function help() {
