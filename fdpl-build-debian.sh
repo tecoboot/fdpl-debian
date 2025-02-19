@@ -10,6 +10,7 @@ function main() {
   lb_clean
   lb_config
   add_package_list
+  copy_firmware
   add_hook_scripts
   lb_build
   update_binary
@@ -118,6 +119,10 @@ function lb_config() {
 function add_package_list() {
   echo "... Add custom files"
   cp -a $FDPL_FOLDER/fdpl.list.chroot config/package-lists/
+}
+
+function copy_firmware() {
+  cp -a $FIRMWARE_FOLDER/lib config/includes.chroot_before_packages/
 }
 
 function add_hook_scripts() {

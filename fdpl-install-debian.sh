@@ -8,8 +8,8 @@ function main() {
   format_disk
   mount_fdpl
   load_fdpl_debian
-  copy_local_files
-  copy_fdpl_debian
+  copy_fdpl_folder
+  load_local_folder
   update_root_password
   update_hostname
   install_grub
@@ -135,25 +135,30 @@ load_fdpl_debian() {
   tar -xf $LB_FOLDER/$TARFILE --checkpoint-action="ttyout='%T%*\r'" --checkpoint=1000
 }
 
-copy_local_files() {
-  if [ -d $LOCAL_FOLDER ]; then
-    echo "... Copy local files to fdpl-debian partition"
-    rsync -ah --info=progress2,stats0 -a $LOCAL_FOLDER $NEW_FDPL_FOLDER/
-    if [ -n "$(ls -A $LOCAL_FOLDER 2>/dev/null)" ]; then
-      echo "... Deploy local files"
-      rsync -ah --info=progress2,stats0 -a $NEW_LOCAL_FOLDER/* $MOUNT_FOLDER/
-    else
-      echo "... Local folder is empty"
-    fi
-  else
-    echo "... No local folder, skipped"
-  fi
+copy_fdpl_folder() {
+  echo "... Copy fdpl-debian folder"
+  cat <<EOF >/tmp/rsync-include-list
+fdpl-build-debian.sh
+fdpl-install-debian.sh
+fdpl-update.sh
+fdpl.vars
+LICENSE
+README.md
+local
+firmware
+lb/fdpl-debian-$DIST-$ARCH.tar
+EOF
+  mkdir -p $NEW_FDPL_FOLDER
+  rsync -ah --info=progress2,stats0 --files-from=/tmp/rsync-include-list --recursive $FDPL_FOLDER $NEW_FDPL_FOLDER/
 }
 
-copy_fdpl_debian() {
-  echo "... Copy $TARFILE to fdpl-debian partition, $(du $LB_FOLDER/$TARFILE -h | cut -f 1)"
-  mkdir -p $NEW_LB_FOLDER
-  rsync -ah --info=progress2,stats0 $LB_FOLDER/$TARFILE $NEW_LB_FOLDER/
+load_local_folder() {
+  if [ -n "$(ls -A $LOCAL_FOLDER 2>/dev/null)" ]; then
+    echo "... Deploy local folder"
+    rsync -ah --info=progress2,stats0 -a $NEW_LOCAL_FOLDER/* $MOUNT_FOLDER/
+  else
+    echo "... Local folder is empty"
+  fi
 }
 
 end_with_copy_log() {
