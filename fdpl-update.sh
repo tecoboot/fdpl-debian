@@ -24,7 +24,7 @@ function help() {
    echo
 }
 
-while getopts ":hb:" option; do
+while getopts ":b:fh" option; do
    case $option in
       b) # set new branch
          shift
