@@ -61,6 +61,7 @@ function prepare_live_build() {
     die "No Internet access"
   fi
   if ! which lb &>/dev/null ; then
+    echo "... Install live-build package"
     export DEBIAN_FRONTEND=noninteractive
     export DEBIAN_PRIORITY=critical
     apt-get -qy update
@@ -78,6 +79,7 @@ function prepare_lb_folder() {
   if [ "$restart" == true ]; then
     echo -n "OK to remove all files in $PWD? "
     read
+    echo "... All files in $LB_FOLDER will be deleted"
     rm -rf *
   fi
 }
@@ -93,7 +95,7 @@ function lb_clean() {
 }
 
 function lb_config() {
-  echo "... Create or update live-build config"
+  echo "... Config live-build config"
   # disabled compression
   # disabled tarball, do ourself (does not work)
   lb config \
@@ -105,7 +107,7 @@ function lb_config() {
     --checksums none \
     --chroot-filesystem none \
     --compression none \
-    --distribution bookworm \
+    --distribution $DIST \
     --firmware-chroot false \
     --gzip-options --fast \
     --memtest none \
@@ -132,7 +134,6 @@ function add_hook_scripts() {
   echo "... Update network, DHCP"
   cat <<end_dhcp >>/etc/network/interfaces
 #
-# run dhclient
 allow-hotplug eth0
 iface eth0 inet dhcp
 #
@@ -140,10 +141,10 @@ end_dhcp
 
 echo "... Update SSH server"
 echo "PermitRootLogin yes" >>/etc/ssh/sshd_config
-dpkg-reconfigure openssh-server
+# xxx dpkg-reconfigure openssh-server
 
 echo "... Remove live package list"
-rm -f config/package-lists/live.list.chroot
+# xxx rm -f config/package-lists/live.list.chroot
 
 exit 0
 9990-fdpl.hook
@@ -182,10 +183,10 @@ function update_binary() {
   
   echo "...... Copy fdpl build files"
   mkdir -p ./$FDPL_FOLDER
-  cp -a $FDPL_FOLDER/fdpl-* ./$FDPL_FOLDER
+  cp -a $FDPL_FOLDER/fdpl-* LICENSE README.md ./$FDPL_FOLDER
 
   echo "...... Tune initrd for speed, for a next initrd generation"
-  sed -i "s/MODULES=.*/MODULES=dep/g; s/.*COMPRESSLEVEL=.*/COMPRESSLEVEL=1/g"  ./etc/initramfs-tools/initramfs.conf
+  # xxx sed -i "s/MODULES=.*/MODULES=dep/g; s/.*COMPRESSLEVEL=.*/COMPRESSLEVEL=1/g"  ./etc/initramfs-tools/initramfs.conf
 
   echo "...... Cleanup binary folder"
   rm -rf usr/share/locale/*
@@ -206,6 +207,7 @@ function make_tarball() {
 
   echo "*************************"
   ls -al $TARFILE
+  ls -al $TARFILE >>$LOGFILE
   echo "*************************"
 }
 

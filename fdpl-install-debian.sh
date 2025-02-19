@@ -201,7 +201,7 @@ insmod ext4
 serial --unit=0 --speed=115200
 terminal_input serial console
 terminal_output serial console
-menuentry 'FDPL Debian $DIST $ARCH' {
+menuentry '$LABEL - FDPL Debian $DIST $ARCH' {
         set root='hd0,1'
         echo    'Loading kernel $kernel_name'
         linux   /boot/$kernel_name root=UUID="$uuid_partition1" rw console=tty0 console=ttyS0,115200n8 net.ifnames=0 biosdevname=0
