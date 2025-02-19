@@ -16,25 +16,27 @@ function main() {
 function help() {
    echo "Update FDPL Debian utility"
    echo
-   echo "Syntax: fdpl-update.sh [-h | -b new-branch]"
+   echo "Syntax: fdpl-update.sh [-b new-branch|f|h]"
    echo "options:"
+   echo "b NB  Set & store branch"
+   echo "f     Follow log"
    echo "h     Show help"
-   echo "b     Set & store branch"
    echo
 }
 
 while getopts ":hb:" option; do
    case $option in
-      h) # display Help
-         help
-         exit
-         ;;
       b) # set new branch
          shift
          NEW_BRANCH=$OPTARG
          ;;
-      2) # Restart lb
-         restart=true
+      f) # Follow
+         follow_latest_log
+         exit
+         ;;
+      h) # display Help
+         help
+         exit
          ;;
      \?) # Invalid option
          echo "Error: Invalid option"

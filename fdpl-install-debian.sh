@@ -23,15 +23,20 @@ function main() {
 function help() {
    echo "Install FDPL Debian on storage device"
    echo
-   echo "Syntax: fdpl-install.sh [-h | -n new-hostname]"
+   echo "Syntax: fdpl-install.sh [-f|h|n new-hostname]"
    echo "options:"
+   echo "f     Follow log"
    echo "h     Show help"
-   echo "n     Set new hostname on installed disk"
+   echo "n NH  Set new hostname on installed disk"
    echo
 }
 
-while getopts ":hn:" option; do
+while getopts ":fhn:" option; do
    case $option in
+      f) # Follow
+         follow_latest_log
+         exit
+         ;;
       h) # display Help
          help
          exit

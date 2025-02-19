@@ -13,7 +13,7 @@ vlan
 dnsmasq
 chrony
 
-wireless-regdb
+# wireless-regdb
 #  firmware-realtek non-free, put in local folder  
 
 net-tools

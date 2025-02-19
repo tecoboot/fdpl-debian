@@ -3,8 +3,6 @@
 source fdpl.vars
 
 function main() {
-  echo "... Start building FDPL Debian $DIST $ARCH"
-  echo "$(date) $SCRIPT started" >>$LOGFILE
   prepare_live_build
   prepare_lb_folder
   purge_old_tarball
@@ -22,11 +20,11 @@ function main() {
 function help() {
    echo "Build FDPL Debian tarball"
    echo
-   echo "Syntax: fdpl-build-debian.sh [ -f | -h | -n new-hostname | -r ]"
+   echo "Syntax: fdpl-build-debian.sh [-f|h|n new-hostname|r]"
    echo "options:"
-   echo "f     Follow build log"
+   echo "f     Follow log"
    echo "h     Show help"
-   echo "n     Set new hostname in tarball"
+   echo "n NH  Set new hostname in tarball"
    echo "r     Restart with empty lb folder"
    echo
 }
@@ -34,7 +32,7 @@ function help() {
 while getopts ":fhn:r" option; do
    case $option in
       f) # Follow
-         tail -f $(ls -t log/fdpl-build-debian.sh.* | head -1)
+         follow_latest_log
          exit
          ;;
       h) # display Help
@@ -163,7 +161,6 @@ exit 0
 
 function lb_build() {
   echo "... Build, takes a while"
-  echo "... Can follow with tail -f $LOGFILE"
   lb build &>>$LOGFILE
 
   # No return code, check binary folder
