@@ -185,7 +185,7 @@ function update_binary() {
 
   echo "...... Tune chrony"
   sed -i 's/makestep .*/makestep 1 -1/' etc/chrony/chrony.conf
-  
+
   echo "...... Copy fdpl build files"
   mkdir -p ./$FDPL_FOLDER
   cp -a $FDPL_FOLDER/fdpl-* \

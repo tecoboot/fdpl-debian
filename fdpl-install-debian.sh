@@ -57,7 +57,7 @@ function find_free_disk() {
   echo "... Find unmounted device, first one found will be used"
   umount_fdpl
   echo "... List of block devices:"
-  for disk in $(lsblk -dno NAME | egrep -v "^sr" | sort)
+  for disk in $(lsblk | grep disk | grep -v " 0B" | cut -d " " -f 1 | sort)
   do
     DiskDev=/dev/$disk
     if mount | grep -q $disk ; then
@@ -75,7 +75,7 @@ function find_free_disk() {
     fi
   done
   echo "... Select a disk ..."
-  for disk in $(lsblk -dno NAME | egrep -v "^sr" | sort)
+  for disk in $(lsblk | grep disk | grep -v " 0B" | cut -d " " -f 1 | sort)
   do
     DiskDev=/dev/$disk
     DiskModel=$(parted $DiskDev print 2>/dev/null | egrep "^Model: " | cut -d " " -f 2-)
@@ -107,7 +107,7 @@ function format_disk() {
   echo "... Make fdpl partition 1 with ext4, set boot flag"
   parted -a cylinder -s $InstallDiskDev mkpart primary ext4 0% 100%
   sync
-  mkfs.ext4 -Fq ${InstallDiskDev}1 -L fdpl-debian 2>&1 >>$LOGFILE
+  mkfs.ext4 -Fq ${InstallDiskDev}1 -L $LABEL 2>&1 >>$LOGFILE
   parted -s $InstallDiskDev set 1 boot on
   sync
   sleep 0.1   # wait before it can be used
@@ -190,7 +190,7 @@ function install_grub() {
   # grub-install --force --root-directory=$MOUNT_FOLDER ${InstallDiskDev}1 2>&1 >>$LOGFILE
   grub-install --force --root-directory=$MOUNT_FOLDER ${InstallDiskDev} &>>$LOGFILE
   sync
-}	
+}
 
 function config_grub() {
   echo "... Configure grub"
