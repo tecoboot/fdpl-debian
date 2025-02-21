@@ -10,22 +10,22 @@ The main design goal is simplicity, just as viruses.
 
 Bootstrapping fdpl-debian is easy, cut & paste these commands in a root shell:
 ```
+cd /root/
 wget -q https://github.com/tecoboot/fdpl-debian/archive/refs/heads/main.zip
 unzip -qq main.zip
+mv fdpl-debian-main fdpl-debian
 rm main.zip
-mv fdpl-debian-main/* ./
-rmdir fdpl-debian-main
+cd fdpl-build-debian
 ```
 
-Run `./fdpl-build-debian.sh` from folder /root/fdpl-debian. This creates your own Debian
-distribution tarball file.
+Run `./fdpl-build-debian.sh`. This creates your own Debian distribution tarball file.
 
-Then insert a USB storage stick to your system and run `fdpl-install-debian.sh` from
-folder /root/fdpl-debian. Now you have your fdpl-debian USB install stick.
+Then insert a USB storage stick to your system and run `fdpl-install-debian.sh`.
+Now you have your fdpl-debian USB install stick.
 
-Unplug and insert to your target device. Boot from USB. Then run `fdpl-install-debian.sh`
-from folder /root/fdpl-debian again. Take out the USB storage stick and reboot. Now you
-have your first device running your fdpl-debian.
+Disconnect and connect to your target device. Boot from USB. Then run
+`fdpl-install-debian.sh` from folder /root/fdpl-debian again. Disconnect the USB storage 
+stick and reboot. Now you have your first device running your fdpl-debian.
 
 The default password is `debian`, or a copy of your root password if it is configured.
 
@@ -35,12 +35,16 @@ installation. With a post-install script, cloning extensions is straight-forward
 Files in ./firmware folder are deployed on "/" root-folder during build.
 These are also copied during installation.
 
-Sync to git repository with `fdpl-update.sh` script.
+Sync with git repository with `fdpl-update.sh` script.
 
-Use file fdpl.vars for adjustments. These are copied during installation, but lost at
-update. Use file fdpl.local.vars for *local* adjustments. These will not be copied and
+Use file fdpl.vars for adjustments. These are copied during installation, but *lost at
+update*. 
+
+Use file fdpl.local.vars for *local* adjustments. These will not be copied and
 will not be overwritten at update.
 
+Note that recent Debian i386 *does not* run on PC Engines Alix boards, Debian requires
+i868 instruction set.
 
 Have fun with FDPL-Debian !!!
 
