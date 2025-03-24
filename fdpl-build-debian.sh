@@ -22,12 +22,12 @@ function main() {
 function help() {
    echo "Build FDPL Debian tarball"
    echo
-   echo "Syntax: fdpl-build-debian.sh [-f|h|n new-hostname|r]"
+   echo "Syntax: fdpl-build-debian.sh [-f|-h|-n new-hostname|-r]"
    echo "options:"
-   echo "f     Follow log"
-   echo "h     Show help"
-   echo "n NH  Set new hostname in tarball"
-   echo "r     Restart with empty lb folder"
+   echo "-f     Follow log"
+   echo "-h     Show help"
+   echo "-n NH  Set new hostname in tarball"
+   echo "-r     Restart with empty lb folder"
    echo
 }
 
@@ -136,6 +136,9 @@ function add_hook_scripts() {
   echo "alias ll='ls -al'" >/etc/profile.d/ls.sh
   chmod +x /etc/profile.d/ls.sh
 
+  echo "... Update vim"
+  echo "set mouse-=a" >/root/.vimrc
+
   echo "... Update network, DHCP"
   cat <<end_dhcp >>/etc/network/interfaces
 #
@@ -189,6 +192,7 @@ function update_binary() {
   echo "...... Copy fdpl build files"
   mkdir -p ./$FDPL_FOLDER
   cp -a $FDPL_FOLDER/fdpl-* \
+        $FDPL_FOLDER/fdpl.* \
         $FDPL_FOLDER/LICENSE \
         $FDPL_FOLDER/README.md ./$FDPL_FOLDER
 

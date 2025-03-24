@@ -6,32 +6,88 @@ function main() {
   echo "... Start FDPL Debian installation"
   find_free_disk
   format_disk
-  mount_fdpl
-  load_fdpl_debian
-  copy_fdpl_folder
-  load_local_folder
-  update_root_password
-  update_hostname
+  for InstallPart in ${InstallDiskDev}2 ${InstallDiskDev}3
+  do 
+    echo "... ### $InstallPart ###"
+    mount_fdpl
+    load_fdpl_debian
+    copy_fdpl_folder
+    load_local_folder
+    update_root_password
+    update_hostname
+  done
+  echo "... ### Installations on partitions done ###"
   install_grub
-  config_grub
   end_with_copy_log
   umount_fdpl
   echo "... FDPL Debian Installation on $InstallDiskDev completed !!"
   log_ended_message
 }
 
+function reinstall() {
+  case ${ROOT_PART: -1} in
+    2)
+      # Maint partition, so reinstall prod and reboot
+      InstallPart=${ROOT_DEV}3
+      mount_fdpl
+      rm -rf $MOUNT_FOLDER/*
+      load_fdpl_debian
+      copy_fdpl_folder
+      load_local_folder
+      update_root_password
+      update_hostname
+      # Disable reinstall service
+      rm -f /etc/systemd/system/multi-user.target.wants/fdpl-install.service
+      # Switch back to new prod partition
+      reboot_part prod
+      ;;
+    3)
+      # Prod partition
+      echo "... Reinstall FDPL Debian, start with maint partition"
+      # Start with reinstall maint partition
+      InstallPart=${ROOT_DEV}2
+      mount_fdpl
+      rm -rf $MOUNT_FOLDER/*
+      load_fdpl_debian
+      copy_fdpl_folder
+      load_local_folder
+      update_root_password
+      update_hostname
+      echo "... Prepare maint partition for reinstall prod"
+      prepare_reinstall_prod
+      reboot_part maint
+      ;;
+  esac
+}
+
+function prepare_reinstall_prod() {
+  echo "... Reinstall FDPL Debian, prepare and switch to maint, and return to new prod"
+  cat <<EOF >$MOUNT_FOLDER/etc/systemd/system/fdpl-install.service
+[Unit]
+Description=FDPL reinstall, now prod partition
+[Service]
+User=root
+WorkingDirectory=/root/fdpl-debian
+ExecStart=/bin/bash /root/fdpl-debian/fdpl-install-debian.sh -r
+[Install]
+WantedBy=multi-user.target
+EOF
+  ln -s /etc/systemd/system/fdpl-install.service $MOUNT_FOLDER/etc/systemd/system/multi-user.target.wants/fdpl-install.service
+}
+
 function help() {
    echo "Install FDPL Debian on storage device"
    echo
-   echo "Syntax: fdpl-install.sh [-f|h|n new-hostname]"
+   echo "Syntax: fdpl-install.sh [-f|-h|-n new-hostname|-r]"
    echo "options:"
-   echo "f     Follow log"
-   echo "h     Show help"
-   echo "n NH  Set new hostname on installed disk"
+   echo "-f     Follow log"
+   echo "-h     Show help"
+   echo "-n NH  Set new hostname on installed disk"
+   echo "-r     Reinstall"
    echo
 }
 
-while getopts ":fhn:" option; do
+while getopts ":fhn:r" option; do
    case $option in
       f) # Follow
          follow_latest_log
@@ -44,6 +100,9 @@ while getopts ":fhn:" option; do
       n) # get new hostname
          shift
          NEW_INSTALL_HOSTNAME=$OPTARG
+         ;;
+      r) # Reinstall
+         Reinstall=true
          ;;
      \?) # Invalid option
          echo "Error: Invalid option"
@@ -87,6 +146,10 @@ function find_free_disk() {
       read OK
       if [ "$OK" == OK ]; then
         InstallDiskDev=$DiskDev
+        DiskSizeGB=$(($(lsblk -bdno SIZE $InstallDiskDev) / 1000000000))
+        if [ $DiskSizeGB -lt $MIN_DISK_SIZE ]; then
+          die "Disk $InstallDiskDev, size ${DiskSizeGB}GB, is not large enough, must be > $MIN_DISK_SIZE GB"
+        fi
         echo
         echo "... Start FDPL Debian installation on $DiskDev"
         break
@@ -101,32 +164,44 @@ function find_free_disk() {
 }
 
 function format_disk() {
-  echo "... Make disklabel (partition  table)"
+  echo "... Make disklabel (partition table)"
   parted -a cylinder -s $InstallDiskDev mklabel msdos
 
-  echo "... Make fdpl partition 1 with ext4, set boot flag"
-  parted -a cylinder -s $InstallDiskDev mkpart primary ext4 0% 100%
-  sync
-  mkfs.ext4 -Fq ${InstallDiskDev}1 -L $LABEL 2>&1 >>$LOGFILE
+  echo "... Make grub partition 1 with boot flag"
+  parted -a cylinder -s $InstallDiskDev mkpart primary ext4 0% $PART_END_GRUB
   parted -s $InstallDiskDev set 1 boot on
+  echo "... Make maint partition 2"
+  parted -a cylinder -s $InstallDiskDev mkpart primary ext4 $PART_END_GRUB $PART_END_MAINT
+  echo "... Make prod partition 3"
+  parted -a cylinder -s $InstallDiskDev mkpart primary ext4 $PART_END_MAINT 100%
+  sync
+  echo "... Format partition 1 - $LABEL_1 - with ext4 filesystem"
+  mkfs.ext4 -Fq ${InstallDiskDev}1 -L $LABEL_1 2>&1 >>$LOGFILE
+  echo "... Format partition 1 - $LABEL_2 - with ext4 filesystem"
+  mkfs.ext4 -Fq ${InstallDiskDev}2 -L $LABEL_2 2>&1 >>$LOGFILE
+  echo "... Format partition 1 - $LABEL_3 - with ext4 filesystem"
+  mkfs.ext4 -Fq ${InstallDiskDev}3 -L $LABEL_3 2>&1 >>$LOGFILE
   sync
   sleep 0.1   # wait before it can be used
 }
 
 function umount_fdpl() {
-  echo "... Unmount $MOUNT_FOLDER"
-  cd
-  echo "...... sync"
-  sync
-  umount -q $MOUNT_FOLDER 2>>$LOGFILE || true
+  if pwd | grep -q $MOUNT_FOLDER ; then
+    cd
+  fi
+  while mount | grep -q " on $MOUNT_FOLDER"
+  do
+    echo "... Unmount $MOUNT_FOLDER"
+    sync
+    umount -q $MOUNT_FOLDER
+  done
 }
 
 function mount_fdpl() {
-  echo "... Mount fdpl-debian partition on $MOUNT_FOLDER"
   mkdir -p $MOUNT_FOLDER
   umount_fdpl
-  echo "... Mount $MOUNT_FOLDER"
-  mount ${InstallDiskDev}1 $MOUNT_FOLDER
+  echo "... Mount ${InstallPart} partition on $MOUNT_FOLDER"
+  mount ${InstallPart} $MOUNT_FOLDER
 }
 
 load_fdpl_debian() {
@@ -141,6 +216,7 @@ copy_fdpl_folder() {
 fdpl-build-debian.sh
 fdpl-install-debian.sh
 fdpl-update.sh
+fdpl.list.chroot
 fdpl.vars
 LICENSE
 README.md
@@ -184,39 +260,95 @@ function update_hostname() {
   echo $NEW_INSTALL_HOSTNAME >$MOUNT_FOLDER/etc/hostname
 }
 
-
 function install_grub() {
-  echo "... Install grub on $InstallDiskDev"
-  # grub-install --force --root-directory=$MOUNT_FOLDER ${InstallDiskDev}1 2>&1 >>$LOGFILE
-  grub-install --force --root-directory=$MOUNT_FOLDER ${InstallDiskDev} &>>$LOGFILE
-  sync
-}
+  echo "... Install grub on ${InstallDiskDev}"
 
-function config_grub() {
-  echo "... Configure grub"
-  uuid_partition1=$(blkid | grep ${InstallDiskDev}1 | awk -F\" '{print $4}')
-  kernel_name=$(basename $(ls $MOUNT_FOLDER/boot/vmlinuz-*))
-  initrd_name=$(basename $(ls $MOUNT_FOLDER/boot/initrd.img-*))
+  uuid_partition2=$(blkid | grep ${InstallDiskDev}2 | awk -F\" '{print $4}')
+  InstallPart=${InstallDiskDev}2
+  mount_fdpl
+  kernel_name2=$(basename $(ls $MOUNT_FOLDER/boot/vmlinuz-*))
+  initrd_name2=$(basename $(ls $MOUNT_FOLDER/boot/initrd.img-*))
+
+  uuid_partition3=$(blkid | grep ${InstallDiskDev}3 | awk -F\" '{print $4}')
+  InstallPart=${InstallDiskDev}3
+  mount_fdpl
+  kernel_name3=$(basename $(ls $MOUNT_FOLDER/boot/vmlinuz-*))
+  initrd_name3=$(basename $(ls $MOUNT_FOLDER/boot/initrd.img-*))
+
+  InstallPart=${InstallDiskDev}1
+  mount_fdpl
+  grub-install --force --root-directory=$MOUNT_FOLDER ${InstallDiskDev}1 &>>$LOGFILE
+  sync
   cat <<EOF >$MOUNT_FOLDER/boot/grub/grub.cfg
 ## FDPL-Debian /boot/grub/grub.cfg
-set default=0
+set default=1
 set timeout=2
 insmod vga
 insmod ext4
 serial --unit=0 --speed=115200
 terminal_input serial console
 terminal_output serial console
-menuentry '$LABEL - FDPL Debian $DIST $ARCH' {
-        set root='hd0,1'
-        echo    'Loading kernel $kernel_name'
-        linux   /boot/$kernel_name root=UUID="$uuid_partition1" rw console=tty0 console=ttyS0,115200n8 net.ifnames=0 biosdevname=0
-        echo    'Loading ramdisk $initrd_name'
-        initrd  /boot/$initrd_name
+menuentry '$LABEL - FDPL Debian $DIST $ARCH Maintenance partition' {
+  set root='hd0,2'
+  echo    'Loading kernel $kernel_name'
+  linux   /boot/$kernel_name2 root=UUID="$uuid_partition2" rw console=tty0 console=ttyS0,115200n8 net.ifnames=0 biosdevname=0
+  echo    'Loading ramdisk $initrd_name'
+  initrd  /boot/$initrd_name2
+}
+menuentry '$LABEL - FDPL Debian $DIST $ARCH Production partition' {
+  set root='hd0,3'
+  echo    'Loading kernel $kernel_name'
+  linux   /boot/$kernel_name3 root=UUID="$uuid_partition3" rw console=tty0 console=ttyS0,115200n8 net.ifnames=0 biosdevname=0
+  echo    'Loading ramdisk $initrd_name'
+  initrd  /boot/$initrd_name3
 }
 EOF
 }
 
-# go for it
-main
-exit 0
+function reboot_part {
+  NextRebootPart=$1
+  echo "... Reboot to $NextRebootPart partition"
+  InstallPart=${ROOT_DEV}1
+  mount_fdpl
+  GrubFolder=$MOUNT_FOLDER/boot/grub
+  case "$NextRebootPart" in
+    maint)
+      if ! egrep -q '^set default=0' $GrubFolder/grub.cfg ; then
+        sed -i 's/set default=.*/set default=0/g' $GrubFolder/grub.cfg
+      fi
+      umount_fdpl
+      echo "... Go for it"
+      sleep 0.1
+      reboot
+      ;;
+    prod)
+      if ! egrep -q '^set default=1' $GrubFolder/grub.cfg ; then
+        sed -i 's/set default=.*/set default=1/g' $GrubFolder/grub.cfg
+      fi
+      umount_fdpl
+      echo "... Go for it"
+      sleep 0.1
+      reboot
+      ;;
+    *)
+      die "Invalid reboot partition"
+      ;;
+  esac
+}
 
+# go for it
+if [ "$Reinstall" == true ]; then
+  echo
+  echo    "### Are you sure you want to reinstall ###"
+  echo -n "### Enter OK to continue : "
+  read OK
+  if [ "$OK" == OK ]; then
+    reinstall
+  else
+    echo "### aborted ###"
+  fi
+else
+  main
+fi
+
+exit 0
