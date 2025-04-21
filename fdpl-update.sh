@@ -15,11 +15,11 @@ function main() {
 function help() {
    echo "Update FDPL Debian utility"
    echo
-   echo "Syntax: fdpl-update.sh [-b new-branch|f|h]"
+   echo "Syntax: fdpl-update.sh [-b new-branch|-f|-h]"
    echo "options:"
-   echo "b NB  Set & store branch"
-   echo "f     Follow log"
-   echo "h     Show help"
+   echo "-b NB  Set & store branch"
+   echo "-f     Follow log"
+   echo "-h     Show help"
    echo
 }
 
@@ -50,7 +50,7 @@ function proces_new_branch() {
     echo "... Branch changed from $BRANCH to $NEW_BRANCH"
     BRANCH=$NEW_BRANCH
     URL=https://github.com/tecoboot/fdpl-debian/archive/refs/heads/$BRANCH.zip
-    sed -i "s/BRANCH=.*/BRANCH=$BRANCH/" $FDPL_FOLDER/fdpl-vars
+    sed -i "s/BRANCH=.*/BRANCH=$BRANCH/" $FDPL_FOLDER/fdpl.vars
   fi
 }
 

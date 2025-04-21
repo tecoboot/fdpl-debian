@@ -36,7 +36,7 @@ pciutils
 usbutils
 user-setup
 less
-vim-tiny
+vim
 lsof
 psmisc
 minicom
@@ -45,6 +45,8 @@ unzip
 zip
 zstd
 xxd
+bind9-dnsutils
+gpg
 
 # fdpl build / install tools
 boot-info-script
