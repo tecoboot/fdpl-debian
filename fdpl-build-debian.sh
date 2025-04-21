@@ -65,10 +65,10 @@ function prepare_live_build() {
     echo "... Install live-build package"
     export DEBIAN_FRONTEND=noninteractive
     export DEBIAN_PRIORITY=critical
-    apt-get -qy update
-    apt-get -qy -o "Dpkg::Options::=--force-confdef" -o "Dpkg::Options::=--force-confold" upgrade
-    apt-get -qy install live-build
-    apt-get -qy autoclean
+    apt-get -qy update &>>$LOGFILE
+    apt-get -qy -o "Dpkg::Options::=--force-confdef" -o "Dpkg::Options::=--force-confold" upgrade &>>$LOGFILE
+    apt-get -qy install live-build &>>$LOGFILE
+    apt-get -qy autoclean &>>$LOGFILE
   fi
 }
 
