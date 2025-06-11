@@ -277,7 +277,7 @@ function install_grub() {
 
   InstallPart=${InstallDiskDev}1
   mount_fdpl
-  grub-install --force --root-directory=$MOUNT_FOLDER ${InstallDiskDev}1 &>>$LOGFILE
+  grub-install --force --root-directory=$MOUNT_FOLDER ${InstallDiskDev} &>>$LOGFILE
   sync
   cat <<EOF >$MOUNT_FOLDER/boot/grub/grub.cfg
 ## FDPL-Debian /boot/grub/grub.cfg
