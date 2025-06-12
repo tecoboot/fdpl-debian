@@ -270,6 +270,7 @@ function update_root_password() {
 }
 
 function update_hostname() {
+  echo "... Update hostname to $NEW_INSTALL_HOSTNAME"
   echo $NEW_INSTALL_HOSTNAME >$MOUNT_FOLDER/etc/hostname
 }
 
