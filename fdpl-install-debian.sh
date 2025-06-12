@@ -12,9 +12,9 @@ function main() {
     mount_fdpl
     load_fdpl_debian
     copy_fdpl_folder
-    load_local_folder
     update_root_password
     update_hostname
+    load_local_folder
   done
   echo "... ### Installations on partitions done ###"
   install_grub
@@ -35,9 +35,9 @@ function reinstall_maint() {
       rm -rf $MOUNT_FOLDER/*
       load_fdpl_debian
       copy_fdpl_folder
-      load_local_folder
       update_root_password
       update_hostname
+      load_local_folder
       echo "... Prepare maint partition for reinstall prod"
       prepare_reinstall_prod
       reboot_part maint
@@ -57,9 +57,9 @@ function reinstall_prod() {
       rm -rf $MOUNT_FOLDER/*
       load_fdpl_debian
       copy_fdpl_folder
-      load_local_folder
       update_root_password
       update_hostname
+      load_local_folder
       # Disable reinstall service
       rm -f /etc/systemd/system/multi-user.target.wants/fdpl-install.service
       # Switch back to new prod partition
@@ -232,6 +232,7 @@ fdpl-install-debian.sh
 fdpl-update.sh
 fdpl.list.chroot
 fdpl.vars
+fdpl.local.vars
 LICENSE
 README.md
 local
