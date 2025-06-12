@@ -24,23 +24,8 @@ function main() {
   log_ended_message
 }
 
-function reinstall() {
+function reinstall_maint() {
   case ${ROOT_PART: -1} in
-    2)
-      # Maint partition, so reinstall prod and reboot
-      InstallPart=${ROOT_DEV}3
-      mount_fdpl
-      rm -rf $MOUNT_FOLDER/*
-      load_fdpl_debian
-      copy_fdpl_folder
-      load_local_folder
-      update_root_password
-      update_hostname
-      # Disable reinstall service
-      rm -f /etc/systemd/system/multi-user.target.wants/fdpl-install.service
-      # Switch back to new prod partition
-      reboot_part prod
-      ;;
     3)
       # Prod partition
       echo "... Reinstall FDPL Debian, start with maint partition"
@@ -57,6 +42,32 @@ function reinstall() {
       prepare_reinstall_prod
       reboot_part maint
       ;;
+    *)
+      echo "reinstall maint but not prod"
+      exit 1
+  esac
+}
+
+function reinstall_prod() {
+  case ${ROOT_PART: -1} in
+    2)
+      # Maint partition, so reinstall prod and reboot
+      InstallPart=${ROOT_DEV}3
+      mount_fdpl
+      rm -rf $MOUNT_FOLDER/*
+      load_fdpl_debian
+      copy_fdpl_folder
+      load_local_folder
+      update_root_password
+      update_hostname
+      # Disable reinstall service
+      rm -f /etc/systemd/system/multi-user.target.wants/fdpl-install.service
+      # Switch back to new prod partition
+      reboot_part prod
+      ;;
+    *)
+      echo "reinstall prod but not maint"
+      exit 1
   esac
 }
 
@@ -68,7 +79,7 @@ Description=FDPL reinstall, now prod partition
 [Service]
 User=root
 WorkingDirectory=/root/fdpl-debian
-ExecStart=/bin/bash /root/fdpl-debian/fdpl-install-debian.sh -r
+ExecStart=/bin/bash /root/fdpl-debian/fdpl-install-debian.sh -R
 [Install]
 WantedBy=multi-user.target
 EOF
@@ -87,7 +98,7 @@ function help() {
    echo
 }
 
-while getopts ":fhn:r" option; do
+while getopts ":fhn:rR" option; do
    case $option in
       f) # Follow
          follow_latest_log
@@ -101,8 +112,11 @@ while getopts ":fhn:r" option; do
          shift
          NEW_INSTALL_HOSTNAME=$OPTARG
          ;;
-      r) # Reinstall
-         Reinstall=true
+      r) # Reinstall, first maint, then prod
+         Reinstall=maint
+         ;;
+      R) # Reinstall-prod (from maint)
+         Reinstall=prod
          ;;
      \?) # Invalid option
          echo "Error: Invalid option"
@@ -337,16 +351,18 @@ function reboot_part {
 }
 
 # go for it
-if [ "$Reinstall" == true ]; then
+if [ "$Reinstall" == maint ]; then
   echo
   echo    "### Are you sure you want to reinstall ###"
   echo -n "### Enter OK to continue : "
   read OK
   if [ "$OK" == OK ]; then
-    reinstall
+    reinstall_maint
   else
     echo "### aborted ###"
   fi
+elif [ "$Reinstall" == prod ]; then
+  reinstall_prod
 else
   main
 fi
