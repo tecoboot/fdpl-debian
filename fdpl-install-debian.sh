@@ -302,14 +302,14 @@ insmod ext4
 serial --unit=0 --speed=115200
 terminal_input serial console
 terminal_output serial console
-menuentry '$LABEL - FDPL Debian $DIST $ARCH Maintenance partition' {
+menuentry '$LABEL_2 - FDPL Debian $DIST $ARCH Maintenance partition' {
   set root='hd0,2'
   echo    'Loading kernel $kernel_name'
   linux   /boot/$kernel_name2 root=UUID="$uuid_partition2" rw console=tty0 console=ttyS0,115200n8 net.ifnames=0 biosdevname=0
   echo    'Loading ramdisk $initrd_name'
   initrd  /boot/$initrd_name2
 }
-menuentry '$LABEL - FDPL Debian $DIST $ARCH Production partition' {
+menuentry '$LABEL_3 - FDPL Debian $DIST $ARCH Production partition' {
   set root='hd0,3'
   echo    'Loading kernel $kernel_name'
   linux   /boot/$kernel_name3 root=UUID="$uuid_partition3" rw console=tty0 console=ttyS0,115200n8 net.ifnames=0 biosdevname=0
