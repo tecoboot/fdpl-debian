@@ -213,6 +213,7 @@ function make_tarball() {
 
   echo "... Make tarball file"
   cd binary
+  rm -rf live
   tar -cf ../$TARFILE *
   cd ..
 
