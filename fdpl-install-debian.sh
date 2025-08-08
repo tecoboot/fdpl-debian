@@ -314,19 +314,19 @@ insmod ext4
 serial --unit=0 --speed=115200
 terminal_input serial console
 terminal_output serial console
+set maint_kernel=/boot/$kernel_name2
+set maint_initrd=/boot/$initrd_name2
+set prod_kernel=/boot/$kernel_name3
+set prod_initrd=/boot/$initrd_name3
 menuentry '$LABEL_2 - FDPL Debian $DIST $ARCH Maintenance partition' {
   set root='hd0,2'
-  echo    'Loading kernel $kernel_name'
-  linux   /boot/$kernel_name2 root=UUID="$uuid_partition2" rw console=tty0 console=ttyS0,115200n8 net.ifnames=0 biosdevname=0
-  echo    'Loading ramdisk $initrd_name'
-  initrd  /boot/$initrd_name2
+  linux  $maint_kernel root=UUID="$uuid_partition2" rw console=tty0 console=ttyS0,115200n8 net.ifnames=0 biosdevname=0
+  initrd $maint_initrd
 }
 menuentry '$LABEL_3 - FDPL Debian $DIST $ARCH Production partition' {
   set root='hd0,3'
-  echo    'Loading kernel $kernel_name'
-  linux   /boot/$kernel_name3 root=UUID="$uuid_partition3" rw console=tty0 console=ttyS0,115200n8 net.ifnames=0 biosdevname=0
-  echo    'Loading ramdisk $initrd_name'
-  initrd  /boot/$initrd_name3
+  linux  $prod_kernel root=UUID="$uuid_partition3" rw console=tty0 console=ttyS0,115200n8 net.ifnames=0 biosdevname=0
+  initrd $prod_initrd
 }
 EOF
   echo "... Copy EFI boot files"
@@ -335,24 +335,28 @@ EOF
 
 function reboot_part {
   NextRebootPart=$1
+  echo "... Check Linux kernel version, current mount"
+  kernel_name=$(basename $(ls $MOUNT_FOLDER/boot/vmlinuz-*))
+  initrd_name=$(basename $(ls $MOUNT_FOLDER/boot/initrd.img-*))
+  #TODO - update kernel and initrd after upgrade
   echo "... Reboot to $NextRebootPart partition"
   InstallPart=${ROOT_PARTITION1}
   mount_fdpl
   GrubFolder=$MOUNT_FOLDER/boot/grub
   case "$NextRebootPart" in
     maint)
-      if ! egrep -q '^set default=0' $GrubFolder/grub.cfg ; then
-        sed -i 's/set default=.*/set default=0/g' $GrubFolder/grub.cfg
-      fi
+      sed -i "s/set default=.*/set default=0/" $GrubFolder/grub.cfg
+      sed -i "s|set maint_kernel=.*|set maint_kernel=/boot/$kernel_name|" $GrubFolder/grub.cfg
+      sed -i "s|set maint_initrd=.*|set maint_initrd=/boot/$initrd_name|" $GrubFolder/grub.cfg
       umount_fdpl
       echo "... Go for it"
       sleep 0.1
       reboot
       ;;
     prod)
-      if ! egrep -q '^set default=1' $GrubFolder/grub.cfg ; then
-        sed -i 's/set default=.*/set default=1/g' $GrubFolder/grub.cfg
-      fi
+      sed -i "s/set default=.*/set default=1/" $GrubFolder/grub.cfg
+      sed -i "s|set prod_kernel=.*|set prod_kernel=/boot/$kernel_name|" $GrubFolder/grub.cfg
+      sed -i "s|set prod_initrd=.*|set prod_initrd=/boot/$initrd_name|" $GrubFolder/grub.cfg
       umount_fdpl
       echo "... Go for it"
       sleep 0.1
