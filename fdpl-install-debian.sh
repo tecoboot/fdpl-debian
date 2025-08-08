@@ -6,7 +6,7 @@ function main() {
   echo "... Start FDPL Debian installation"
   find_free_disk
   format_disk
-  for InstallPart in ${InstallDiskDev}2 ${InstallDiskDev}3
+  for InstallPart in ${InstallPartition2} ${InstallPartition3}
   do 
     echo "... ### $InstallPart ###"
     mount_fdpl
@@ -27,10 +27,10 @@ function main() {
 function reinstall_maint() {
   case ${ROOT_PART: -1} in
     3)
-      # Prod partition
+      # Prod partition active, reinstall maint
       echo "... Reinstall FDPL Debian, start with maint partition"
       # Start with reinstall maint partition
-      InstallPart=${ROOT_DEV}2
+      InstallPart=${ROOT_PARTITION2}
       mount_fdpl
       rm -rf $MOUNT_FOLDER/*
       load_fdpl_debian
@@ -52,7 +52,7 @@ function reinstall_prod() {
   case ${ROOT_PART: -1} in
     2)
       # Maint partition, so reinstall prod and reboot
-      InstallPart=${ROOT_DEV}3
+      InstallPart=${ROOT_PARTITION3}
       mount_fdpl
       rm -rf $MOUNT_FOLDER/*
       load_fdpl_debian
@@ -178,23 +178,34 @@ function find_free_disk() {
 }
 
 function format_disk() {
-  echo "... Make disklabel (partition table)"
-  parted -a cylinder -s $InstallDiskDev mklabel msdos
-
-  echo "... Make grub partition 1 with boot flag"
-  parted -a cylinder -s $InstallDiskDev mkpart primary ext4 0% $PART_END_GRUB
+  case "$BOOT_TYPE" in
+    EFI)
+      echo "... Make disklabel (partition table), type GPT for EFI boot and FAT boot partition"
+      parted -a cylinder -s $InstallDiskDev mklabel gpt
+      parted -a cylinder -s $InstallDiskDev mkpart primary fat16 0% $PART_END_GRUB
+      ;;
+    MBR)
+      echo "... Make disklabel (partition table), type MSDOS for legacy/MBR boot and ext4 boot partition"
+      parted -a cylinder -s $InstallDiskDev mklabel msdos
+      parted -a cylinder -s $InstallDiskDev mkpart primary ext4 0% $PART_END_GRUB
+      ;;
+  esac
+  echo "... Set boot flag on partition 1 "
   parted -s $InstallDiskDev set 1 boot on
   echo "... Make maint partition 2"
   parted -a cylinder -s $InstallDiskDev mkpart primary ext4 $PART_END_GRUB $PART_END_MAINT
   echo "... Make prod partition 3"
   parted -a cylinder -s $InstallDiskDev mkpart primary ext4 $PART_END_MAINT 100%
   sync
-  echo "... Format partition 1 - $LABEL_1 - with ext4 filesystem"
-  mkfs.ext4 -Fq ${InstallDiskDev}1 -L $LABEL_1 2>&1 >>$LOGFILE
+  InstallPartition1=$(fdisk -l $InstallDiskDev | egrep -A 3 "^Device " | awk 'NR==2 {print $1}')
+  InstallPartition2=$(fdisk -l $InstallDiskDev | egrep -A 3 "^Device " | awk 'NR==3 {print $1}')
+  InstallPartition3=$(fdisk -l $InstallDiskDev | egrep -A 3 "^Device " | awk 'NR==4 {print $1}')
+  echo "... Format partition 1 - $LABEL_1 - with fat16 filesystem"
+  mkfs.fat -F 16 ${InstallPartition1} -n FDPLBOOTEFI 2>&1 >>$LOGFILE
   echo "... Format partition 1 - $LABEL_2 - with ext4 filesystem"
-  mkfs.ext4 -Fq ${InstallDiskDev}2 -L $LABEL_2 2>&1 >>$LOGFILE
+  mkfs.ext4 -Fq ${InstallPartition2} -L $LABEL_2 2>&1 >>$LOGFILE
   echo "... Format partition 1 - $LABEL_3 - with ext4 filesystem"
-  mkfs.ext4 -Fq ${InstallDiskDev}3 -L $LABEL_3 2>&1 >>$LOGFILE
+  mkfs.ext4 -Fq ${InstallPartition3} -L $LABEL_3 2>&1 >>$LOGFILE
   sync
   sleep 0.1   # wait before it can be used
 }
@@ -219,7 +230,7 @@ function mount_fdpl() {
 }
 
 load_fdpl_debian() {
-  echo "... Load $TARFILE to fdpl-debian partition, $(du $LB_FOLDER/$TARFILE -h | cut -f 1)"
+  echo "... Load $TARFILE to ${InstallPart} partition, $(du $LB_FOLDER/$TARFILE -h | cut -f 1)"
   cd $MOUNT_FOLDER
   tar -xf $LB_FOLDER/$TARFILE --checkpoint-action="ttyout='%T%*\r'" --checkpoint=1000
 }
@@ -278,19 +289,19 @@ function update_hostname() {
 function install_grub() {
   echo "... Install grub on ${InstallDiskDev}"
 
-  uuid_partition2=$(blkid | grep ${InstallDiskDev}2 | awk -F\" '{print $4}')
-  InstallPart=${InstallDiskDev}2
+  uuid_partition2=$(blkid | grep ${InstallPartition2} | awk -F\" '{print $4}')
+  InstallPart=${InstallPartition2}
   mount_fdpl
   kernel_name2=$(basename $(ls $MOUNT_FOLDER/boot/vmlinuz-*))
   initrd_name2=$(basename $(ls $MOUNT_FOLDER/boot/initrd.img-*))
 
-  uuid_partition3=$(blkid | grep ${InstallDiskDev}3 | awk -F\" '{print $4}')
-  InstallPart=${InstallDiskDev}3
+  uuid_partition3=$(blkid | grep ${InstallPartition3} | awk -F\" '{print $4}')
+  InstallPart=${InstallPartition3}
   mount_fdpl
   kernel_name3=$(basename $(ls $MOUNT_FOLDER/boot/vmlinuz-*))
   initrd_name3=$(basename $(ls $MOUNT_FOLDER/boot/initrd.img-*))
 
-  InstallPart=${InstallDiskDev}1
+  InstallPart=${InstallPartition1}
   mount_fdpl
   grub-install --force --root-directory=$MOUNT_FOLDER ${InstallDiskDev} &>>$LOGFILE
   sync
@@ -318,12 +329,14 @@ menuentry '$LABEL_3 - FDPL Debian $DIST $ARCH Production partition' {
   initrd  /boot/$initrd_name3
 }
 EOF
+  echo "... Copy EFI boot files"
+  cp -a /EFI $MOUNT_FOLDER/
 }
 
 function reboot_part {
   NextRebootPart=$1
   echo "... Reboot to $NextRebootPart partition"
-  InstallPart=${ROOT_DEV}1
+  InstallPart=${ROOT_PARTITION1}
   mount_fdpl
   GrubFolder=$MOUNT_FOLDER/boot/grub
   case "$NextRebootPart" in

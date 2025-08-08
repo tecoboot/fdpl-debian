@@ -3,6 +3,7 @@ systemd-sysv
 dbus
 locales
 grub2
+grub-efi-amd64-bin
 ca-certificates
 
 # Network:
@@ -53,4 +54,4 @@ boot-info-script
 bsdmainutils
 xz-utils
 parted
-
+dosfstools
