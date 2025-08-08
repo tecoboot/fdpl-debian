@@ -320,13 +320,13 @@ set prod_kernel=/boot/$kernel_name3
 set prod_initrd=/boot/$initrd_name3
 menuentry '$LABEL_2 - FDPL Debian $DIST $ARCH Maintenance partition' {
   set root='hd0,2'
-  linux  $maint_kernel root=UUID="$uuid_partition2" rw console=tty0 console=ttyS0,115200n8 net.ifnames=0 biosdevname=0
-  initrd $maint_initrd
+  linux  \$maint_kernel root=UUID="$uuid_partition2" rw console=tty0 console=ttyS0,115200n8 net.ifnames=0 biosdevname=0
+  initrd \$maint_initrd
 }
 menuentry '$LABEL_3 - FDPL Debian $DIST $ARCH Production partition' {
   set root='hd0,3'
-  linux  $prod_kernel root=UUID="$uuid_partition3" rw console=tty0 console=ttyS0,115200n8 net.ifnames=0 biosdevname=0
-  initrd $prod_initrd
+  linux  \$prod_kernel root=UUID="$uuid_partition3" rw console=tty0 console=ttyS0,115200n8 net.ifnames=0 biosdevname=0
+  initrd \$prod_initrd
 }
 EOF
   echo "... Copy EFI boot files"
