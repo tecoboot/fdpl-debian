@@ -122,11 +122,14 @@ function add_package_list() {
 }
 
 function copy_firmware() {
+  echo "... Copy firmware files"
+  mkdir -p $FIRMWARE_FOLDER/lib
   cp -a $FIRMWARE_FOLDER/lib config/includes.chroot_before_packages/
 }
 
 function add_hook_scripts() {
   echo "... Add hook scripts"
+  mkdir -p config/hooks/normal
   cat <<'9990-fdpl.hook' >config/hooks/normal/9990-fdpl.hook.chroot
 
   echo "... Update root password"
