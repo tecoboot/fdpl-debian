@@ -127,49 +127,47 @@ while getopts ":fhn:rR" option; do
 done
 
 function find_free_disk() {
-  echo "... Find unmounted device, first one found will be used"
   umount_fdpl
-  echo "... List of block devices:"
-  for disk in $(lsblk | grep disk | grep -v " 0B" | cut -d " " -f 1 | sort)
+  echo "... List disk devices:"
+  CanidateDisks=""
+  for disk in $(lsblk -dn | grep -v " 0B" | cut -d " " -f 1 | sort)
   do
+    # disks > 0 bytes
     DiskDev=/dev/$disk
-    if mount | grep -q $disk ; then
+    if sfdisk -l $DiskDev &>/dev/null ; then
+      # Usable disk found
       echo "========================================"
-      echo "... A partition on $DiskDev is mounted, skip"
-      echo
-    else
-      if sfdisk -l $DiskDev &>/dev/null ; then
-        echo "========================================"
+      DiskSizeGB=$(($(lsblk -bdno SIZE $DiskDev) / 1000000000))
+      if mount | grep -q "$DiskDev" ; then
+        echo "... A partition on $DiskDev is mounted, skip"
+      elif [ $DiskSizeGB -lt $MIN_DISK_SIZE ]; then
+        echo "... Disk $DiskDev size is less than $MIN_DISK_SIZE GB, skip"
+      else
+        # Usable disk found
+        CanidateDisks="$CanidateDisks $DiskDev"
         sfdisk -l $DiskDev 2>>$LOGFILE | egrep "^Disk $DiskDev" || true
         parted $DiskDev print 2>>$LOGFILE | egrep "^Model: " || true
-        lsblk $DiskDev 2>>$LOGFILE || true
-        echo
       fi
     fi
   done
+  echo "========================================"
   echo "... Select a disk ..."
-  for disk in $(lsblk | grep disk | grep -v " 0B" | cut -d " " -f 1 | sort)
+  for DiskDev in $CanidateDisks
   do
-    DiskDev=/dev/$disk
     DiskModel=$(parted $DiskDev print 2>/dev/null | egrep "^Model: " | cut -d " " -f 2-)
     DiskSize=$(sfdisk -l $DiskDev | egrep "^Disk $DiskDev" | cut -d " " -f 3-4)
-    if ! mount | grep -q $DiskDev ; then
+    echo
+    echo    "### All data on disk $DiskDev, $DiskModel, $DiskSize will be destroyed ###"
+    echo -n "### Enter OK to continue : "
+    read OK
+    if [ "$OK" == OK ]; then
+      InstallDiskDev=$DiskDev
+      DiskSizeGB=$(($(lsblk -bdno SIZE $InstallDiskDev) / 1000000000))
       echo
-      echo    "### All data on disk $DiskDev, $DiskModel, $DiskSize will be destroyed ###"
-      echo -n "### Enter OK to continue : "
-      read OK
-      if [ "$OK" == OK ]; then
-        InstallDiskDev=$DiskDev
-        DiskSizeGB=$(($(lsblk -bdno SIZE $InstallDiskDev) / 1000000000))
-        if [ $DiskSizeGB -lt $MIN_DISK_SIZE ]; then
-          die "Disk $InstallDiskDev, size ${DiskSizeGB}GB, is not large enough, must be > $MIN_DISK_SIZE GB"
-        fi
-        echo
-        echo "... Start FDPL Debian installation on $DiskDev"
-        break
-      else
-        echo "...... Installation on disk $DiskDev skipped"
-      fi
+      echo "... Start FDPL Debian installation on $DiskDev"
+      break
+    else
+      echo "...... Installation on disk $DiskDev skipped"
     fi
   done
   if [ -z "$InstallDiskDev" ]; then
@@ -188,6 +186,9 @@ function format_disk() {
       echo "... Make disklabel (partition table), type MSDOS for legacy/MBR boot and ext4 boot partition"
       parted -a cylinder -s $InstallDiskDev mklabel msdos
       parted -a cylinder -s $InstallDiskDev mkpart primary ext4 0% $PART_END_GRUB
+      ;;
+    *)
+      die "No valid BOOT_TYPE, select EFI or MBR"
       ;;
   esac
   echo "... Set boot flag on partition 1 "
