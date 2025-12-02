@@ -336,37 +336,36 @@ EOF
 
 function reboot_part {
   NextRebootPart=$1
-  echo "... Check Linux kernel version, current mount"
-  kernel_name=$(basename $(ls $MOUNT_FOLDER/boot/vmlinuz-*))
-  initrd_name=$(basename $(ls $MOUNT_FOLDER/boot/initrd.img-*))
-  #TODO - update kernel and initrd after upgrade
   echo "... Reboot to $NextRebootPart partition"
-  InstallPart=${ROOT_PARTITION1}
-  mount_fdpl
-  GrubFolder=$MOUNT_FOLDER/boot/grub
   case "$NextRebootPart" in
     maint)
-      sed -i "s/set default=.*/set default=0/" $GrubFolder/grub.cfg
-      sed -i "s|set maint_kernel=.*|set maint_kernel=/boot/$kernel_name|" $GrubFolder/grub.cfg
-      sed -i "s|set maint_initrd=.*|set maint_initrd=/boot/$initrd_name|" $GrubFolder/grub.cfg
-      umount_fdpl
-      echo "... Go for it"
-      sleep 0.1
-      reboot
+      NextPart=${ROOT_PARTITION2}
+      GrubDefault=0
       ;;
     prod)
-      sed -i "s/set default=.*/set default=1/" $GrubFolder/grub.cfg
-      sed -i "s|set prod_kernel=.*|set prod_kernel=/boot/$kernel_name|" $GrubFolder/grub.cfg
-      sed -i "s|set prod_initrd=.*|set prod_initrd=/boot/$initrd_name|" $GrubFolder/grub.cfg
-      umount_fdpl
-      echo "... Go for it"
-      sleep 0.1
-      reboot
+      NextPart=${ROOT_PARTITION3}
+      GrubDefault=1
       ;;
     *)
       die "Invalid reboot partition"
       ;;
   esac
+  echo "... Get Linux kernel version on next partition"
+  InstallPart=$NextPart
+  mount_fdpl
+  kernel_name=$(basename $(ls $MOUNT_FOLDER/boot/vmlinuz-*))
+  initrd_name=$(basename $(ls $MOUNT_FOLDER/boot/initrd.img-*))
+  echo "... Linux kernel found: $kernel_name"
+  InstallPart=${ROOT_PARTITION1}
+  mount_fdpl
+  GrubFolder=$MOUNT_FOLDER/boot/grub
+  sed -i "s/set default=.*/set default=${GrubDefault}/" $GrubFolder/grub.cfg
+  sed -i "s|set maint_kernel=.*|set maint_kernel=/boot/$kernel_name|g" $GrubFolder/grub.cfg
+  sed -i "s|set maint_initrd=.*|set maint_initrd=/boot/$initrd_name|g" $GrubFolder/grub.cfg
+  umount_fdpl
+  echo "... Go for it"
+  sleep 0.1
+  reboot
 }
 
 # go for it
