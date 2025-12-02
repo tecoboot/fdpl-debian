@@ -86,7 +86,7 @@ OK to remove all files in /root/fdpl-debian/lb?
 ... Remove live tarball (bypass)
 ... Make tarball file
 *************************
--rw-r--r-- 1 root root 739819520 Feb 19 16:53 fdpl-debian-bookworm-amd64.tar
+-rw-r--r-- 1 root root 535173120 Dec  1 19:34 fdpl-debian-trixie-amd64.tar
 *************************
 ... FDPL Debian build completed !!
 root@fdpl202502191758:~/fdpl-debian#
@@ -94,48 +94,58 @@ root@fdpl202502191758:~/fdpl-debian#
 
 Running `fdpl-install-debian.sh`, switch to new hostname:
 ```
-root@fdpl202502191758:~/fdpl-debian# ./fdpl-install-debian.sh -n fdpl-003
+root@fdpl-2512021300:~/fdpl-debian# ./fdpl-install-debian.sh 
 ... Set vars
 ... Set local vars from fdpl.local.vars
 ... Start FDPL Debian installation
-... Find unmounted device, first one found will be used
-... Unmount /mnt/fdpl-debian
-...... sync
-... List of block devices:
+... List disk devices:
 ========================================
-... A partition on /dev/sda is mounted, skip
-
+Disk /dev/sda: 14.91 GiB, 16013942784 bytes, 31277232 sectors
+Model: ATA SATA SSD (scsi)
 ========================================
-Disk /dev/sdb: 8 GiB, 8589934592 bytes, 16777216 sectors
-Model: VMware, VMware Virtual S (scsi)
-NAME   MAJ:MIN RM SIZE RO TYPE MOUNTPOINTS
-sdb      8:16   0   8G  0 disk
-└─sdb1   8:17   0   8G  0 part
-
+... A partition on /dev/sdb is mounted, skip
+========================================
 ... Select a disk ...
 
-### All data on disk /dev/sdb, VMware, VMware Virtual S (scsi), 8 GiB, will be destroyed ###
+### All data on disk /dev/sda, ATA SATA SSD (scsi), 14.91 GiB, will be destroyed ###
 ### Enter OK to continue : OK
 
-... Start FDPL Debian installation on /dev/sdb
-... Make disklabel (partition  table)
-... Make fdpl partition 1 with ext4, set boot flag
-... Mount fdpl-debian partition on /mnt/fdpl-debian
-... Unmount /mnt/fdpl-debian
-...... sync
-... Mount /mnt/fdpl-debian
-... Load fdpl-debian-bookworm-amd64.tar to fdpl-debian partition, 706M
-... Copy fdpl-debian folder
-        739.89M  99%  348.79MB/s    0:00:02 (xfr#28, to-chk=0/42)
-... Deploy local folder
-         33.10K 100%   30.14MB/s    0:00:00 (xfr#13, to-chk=0/16)
+... Start FDPL Debian installation on /dev/sda
+... Make disklabel (partition table), type MSDOS for legacy/MBR boot and ext4 boot partition
+... Set boot flag on partition 1 
+... Make maint partition 2
+... Make prod partition 3
+... Format partition 1 - grub-2512021404 - with fat16 filesystem
+... Format partition 1 - maint-2512021404 - with ext4 filesystem
+... Format partition 1 - prod-2512021404 - with ext4 filesystem
+... ### /dev/sda2 ###
+... Mount /dev/sda2 partition on /mnt/fdpl-debian
+... Load fdpl-debian-trixie-amd64.tar to /dev/sda2 partition, 511M
+... Copy fdpl-debian folder                                                                                                                                                             
+        535.27M 100%   65.38MB/s    0:00:07 (xfr#22, to-chk=0/28) 
 ... Update root password, copied from current system
-... Update hostname
-... Install grub on /dev/sdb
-... Configure grub
+... Update hostname to fdpl-2512021404
+... Local folder is empty
+... ### /dev/sda3 ###
+... Unmount /mnt/fdpl-debian
+... Mount /dev/sda3 partition on /mnt/fdpl-debian
+... Load fdpl-debian-trixie-amd64.tar to /dev/sda3 partition, 511M
+... Copy fdpl-debian folder                                                                                                                                                             
+        535.27M 100%   65.57MB/s    0:00:07 (xfr#22, to-chk=0/28) 
+... Update root password, copied from current system
+... Update hostname to fdpl-2512021404
+... Local folder is empty
+... ### Installations on partitions done ###
+... Install grub on /dev/sda
+... Unmount /mnt/fdpl-debian
+... Mount /dev/sda2 partition on /mnt/fdpl-debian
+... Unmount /mnt/fdpl-debian
+... Mount /dev/sda3 partition on /mnt/fdpl-debian
+... Unmount /mnt/fdpl-debian
+... Mount /dev/sda1 partition on /mnt/fdpl-debian
+... Copy EFI boot files
 ... Copy logfile
 ... Unmount /mnt/fdpl-debian
-...... sync
-... FDPL Debian Installation on /dev/sdb completed !!
-root@fdpl202502191758:~/fdpl-debian#
+... FDPL Debian Installation on /dev/sda completed !!
+root@fdpl-2512021300:~/fdpl-debian# 
 ```
