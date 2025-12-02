@@ -32,6 +32,8 @@ netcat-traditional
 socat
 iperf3
 
+avahi-daemon
+avahi-utils
 # Utilities
 pciutils
 usbutils
